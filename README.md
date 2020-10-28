@@ -1,7 +1,9 @@
 ## Running the chat app
 First run npm install on both the root directory and "client" directory.
-Run server.js with `node server.js`, that will handle socket.io connections
-Then in the "client" directory you can do `npm start` to launch the app
+
+Run the server that will handle socket.io connections with `node server.js` in the root directory.
+
+Then in the "client" directory you can do `npm start` to launch the app.
 
 Server is in running on 8000 port
 
