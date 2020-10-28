@@ -1,10 +1,16 @@
+## First run npm install on both the root directory and "client" directory.
+## Run server.js with `node server.js`, that will handle socket.io connections
+## Then in the "client" directory you can do `npm start` to launch the app
+
+Server is in running on 8000 port
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
 
-In the project directory, you can run:
+In the "/client" directory, you can run:
 
 ### `npm start`
 
