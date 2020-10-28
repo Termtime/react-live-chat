@@ -1,0 +1,157 @@
+.max-width{
+  width: 100%;
+}
+.flex-container{
+  display:flex;
+}
+#app{
+  margin:20px;
+  margin-left:35px;
+}
+.userList{
+  display:flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 20vw;
+  border-top-right-radius: 1em;
+}
+
+#userlist-title{
+  background-color: rgb(196, 69, 69);
+  padding-top:10px;
+  color:white;
+  box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.75);
+  margin-bottom: 15px;
+}
+
+.userList-container{
+  display:flex;
+  height:85vh;
+  /* padding-left:10px; */
+  margin-left:15px;
+  box-shadow: 2px 0px 10px 1px rgba(0,0,0,0.75);
+  border-top-right-radius: 1em;
+  border-bottom-right-radius: 1em;
+}
+
+.messageBox-container{
+  display:flex;
+  height:85vh;
+  flex-grow: 1;
+  overflow-y: auto;
+  height:85vh;
+  padding:10px;
+  /* border:1px solid black; */
+  box-shadow: -2px 0px 10px 1px rgba(0,0,0,0.75);
+  border-top-left-radius: 1em;
+  border-bottom-left-radius: 1em;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: 0px 0px 10px 10px transparent;
+  border: solid 1px transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 20px 10px rgb(71, 65, 65);
+  border-radius: 1em;
+  border: solid 1px transparent;
+}
+.ownMessage{
+  align-self:flex-end;
+  display: flex;
+  padding: 10px 10px 0px 10px;
+  background-color:rgb(49, 40, 126);
+  border-radius: 10px;
+  width: auto;
+  max-width: 400px;
+  min-width: 120px;
+  margin-bottom: 5px;
+}
+
+.message{
+  display:flex;
+  align-self:flex-start;
+  padding: 10px 10px 0px 10px;
+  background-color: rgb(161, 72, 72);
+  border-radius: 10px;
+  width: auto;
+  max-width: 400px;
+  min-width: 120px;
+  margin-bottom: 5px;
+}
+
+.messageText{
+  color:white;
+  padding-left:10px;
+  text-overflow: ellipsis;
+  white-space: pre-line;
+}
+
+#msgInput{
+  flex-grow: 1;
+  margin-top:20px;
+  margin-right:10px;
+  box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.75);
+  resize: none;
+  max-height: 120px;
+}
+
+.btn{
+  box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.75);
+}
+.username{
+  color: white;
+  margin-top:-5px;
+}
+.userlist-username{
+  color:black;
+  padding-left:15px;
+}
+.timeStamp{
+  color:rgb(190, 190, 190);
+  justify-content: flex-end;
+  margin-top:-20px;
+  margin-bottom: 5px;
+}
+.whiteTxt{
+  color:white;
+}
+.col{
+  display: flex;
+  flex-direction: column;
+}
+
+.row{
+  display: flex;
+  flex-direction: row;
+}
+
+.left{
+  justify-content: flex-start;
+  justify-self: flex-start;
+  justify-items: flex-start;
+}
+
+.right{
+  justify-content: flex-end;
+  justify-self: flex-end;
+  justify-items: flex-end;
+}
+
+.center{
+  justify-content: center;
+}
+
+.wrap{
+  flex-wrap: wrap;
+}
+
+.avatar{
+  width:20px;
+}
