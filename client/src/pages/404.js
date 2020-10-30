@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const notFound404 = (props) => {
     return (
@@ -7,4 +7,4 @@ const notFound404 = (props) => {
             <h2>Not found</h2>
         </div>
     );
-}
+};

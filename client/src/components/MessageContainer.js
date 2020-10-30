@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const MessageContainer = (props) => {
     return (
@@ -8,9 +8,7 @@ export const MessageContainer = (props) => {
                     <small className="username">{props.user.username}</small>
                 </div>
                 <div className="row ">
-                    <p className="wrap messageText">
-                        {props.message.body}
-                    </p>
+                    <p className="wrap messageText">{props.message.body}</p>
                 </div>
                 <div className="row timeStamp">
                     <small>{props.message.time}</small>
@@ -18,4 +16,4 @@ export const MessageContainer = (props) => {
             </div>
         </div>
     );
-}
+};
