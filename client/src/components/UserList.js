@@ -1,6 +1,5 @@
 import React from  'react';
 import { UserItem } from './UserItem';
-
 export const UserListBase = (props) => {
 
     return (
@@ -9,9 +8,11 @@ export const UserListBase = (props) => {
                 <div id="userlist-title" className="row center">
                     <p>Users</p>
                 </div>
-                {
-                    props.users.map(user => <UserItem user= {user} />) 
-                }
+                <div id="users">
+                    {
+                        props.users.map(user => <UserItem user= {user} />) 
+                    }
+                </div>
             </div>
 
         </div>

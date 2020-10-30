@@ -11,6 +11,7 @@ export const MessageTextAreaBase = (props) => {
         const messageObject = {
           body: message,
           user: props.ownUser,
+          roomId: props.roomId,
           date: new Date(),
           time: new Date().toLocaleTimeString('en-US')
         };
@@ -44,7 +45,7 @@ export const MessageTextAreaBase = (props) => {
     }
     return (
         <form className="form-inline" onSubmit={sendMessage}>
-            <textarea id="msgInput" rows="2"className="form-control" value={message} onInput={ handleChange } onKeyDown={ handleKeyDown } placeholder="Write something...">
+            <textarea id="msgInput" rows="1"className="form-control" value={message} onInput={ handleChange } onKeyDown={ handleKeyDown } placeholder="Write something...">
             </textarea>
             <input type="submit" className="btn btn-primary"/>
         </form>

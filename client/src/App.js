@@ -1,29 +1,36 @@
 import React, { useState, useEffect, useRef} from 'react';
-import './App.css';
+import './css/App.css';
 import io from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { MessagesBox } from './containers/MessagesBox';
 import { MessageTextArea } from './containers/MessageTextArea';
 import { UserList } from './containers/UserList';
+import { useHistory } from 'react-router-dom';
 let isTyping = false;
 let timeout = null;
 
 export const App = (props) => {
   const [usersTyping, setUsersTyping] = useState([]);
-
+  const history = useHistory();
   const socketREF = useRef();
-  
-  const usersREF = useRef([]);
+  const usersREF = useRef();
 
   useEffect(() => {
+    //if roomId or username is not set, then return to homepage and clear redux state
+    if(!props.roomId || !props.ownUser.username){
+      history.push("/");
+      props.disconnect();
+      return;
+    }
+
     socketREF.current = io.connect("http://localhost:8000");
     props.initialize(socketREF);
     socketREF.current.on("own-id", id => {
-      // setOwnId(id);
-      
+
       var userInfo = {
-        username: "Termtime",
-        id: id
+        username: props.ownUser.username,
+        id: id,
+        room: props.roomId
       }
 
       props.connect(userInfo);
@@ -31,7 +38,6 @@ export const App = (props) => {
     });
 
     socketREF.current.on("userlist-update", updatedUserList => {
-      // setUsers(updatedUserList);
       props.updateUserlist(updatedUserList);
       usersREF.current = updatedUserList;
       console.log("user list has been updated", usersREF.current);
@@ -63,22 +69,21 @@ export const App = (props) => {
         console.log("undefined user found to have stopped typing, almost crashed");
       }else{
         setUsersTyping(usersTyping.filter(user => user.id !== id));
-
       }
     })
     return () => {
       socketREF.current.close();
+      props.disconnect();
     }
   },[])
 
   function receivedMessage(message){
     props.receivedMessage(message);
-    // setMessages(oldMsgs => [...oldMsgs, message]);
-      document.querySelector(".messageBox-container").scrollTo(0, document.querySelector(".messageBox-container").scrollHeight);
+    document.querySelector(".messageBox-container").scrollTo(0, document.querySelector(".messageBox-container").scrollHeight);
   }
 
   return (
-    <div className="flex-container col ">
+    <div className="flex-container col App ">
       <div id="app">
         <div className="row" >
             <MessagesBox/>

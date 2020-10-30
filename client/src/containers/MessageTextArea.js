@@ -4,7 +4,8 @@ import { MessageTextAreaBase } from '../components/MessageTextArea';
 const mapStateToProps = state => {
     return {
         socket: state.socket,
-        ownUser: state.ownUser
+        ownUser: state.ownUser,
+        roomId: state.roomId
     }
 }
 

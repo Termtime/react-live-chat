@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import 'jquery/dist/jquery';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/js/bootstrap.js';
 import { App } from './containers/App';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { HomePage } from './containers/HomePage';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
 import { createStore } from 'redux';
 import { liveChat } from './reducers';
@@ -12,14 +16,14 @@ const store = createStore(liveChat);
 
 ReactDOM.render(
   <React.StrictMode>
-    <Router>
-      <Provider store={store}>
+    <BrowserRouter>
+      <Provider store={ store }>
         <Switch>
-          <Route path="/" component={App}></Route>
-          <Route path="/room/roomNo:"></Route>
+          <Route exact path="/" component={ HomePage }></Route>
+          <Route exact path="/room" component={ App }></Route>
         </Switch>
       </Provider>
-    </Router>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );

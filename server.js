@@ -5,37 +5,67 @@ const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
 
-let clients = [];
+let rooms = [];
 
 io.on("connection", socket => {
     console.log("New connection: " + socket.id);
     socket.emit("own-id", socket.id);
     socket.on("presentation", clientInfo =>{
-        clients.push(clientInfo);
-        console.log(clients);
-        io.emit("userlist-update", clients);
+        var client = {
+            username: clientInfo.username,
+            id: clientInfo.id
+        };
+        // clients.push(clientInfo);
+        
+        socket.join(clientInfo.room);
+        //If the room exists, append to the room
+        var room = rooms.find(room => room.id === clientInfo.room);
+        if(room){
+            room.clients.push(client);
+        }else{ //else, add the room
+            room = {
+                id: clientInfo.room,
+                clients: [client]
+            }
+            rooms.push(room);
+        }
+        io.to(clientInfo.room).emit("userlist-update", room.clients);
+
+        console.log("Current rooms: ",rooms);
     })
 
-    socket.on("send-msg", body => {
-        console.log("Message sent: " + body.body)
-        io.emit("msg", body);
+    socket.on("send-msg", msg => {
+        console.log("Message sent: " + msg.body)
+        console.log("roomID on sent msg:", msg.roomId)
+        io.to(msg.roomId).emit("msg", msg);
     });
 
     socket.on("isTyping", () => {
         console.log("client is typing")
-        socket.broadcast.emit("isTyping", socket.id)
+        console.log(socket.rooms);
+        var roomId = socket.rooms[Object.keys(socket.rooms)[0]];
+        socket.to(roomId).broadcast.emit("isTyping", socket.id)
     });
 
     socket.on("clientStoppedTyping", id => {
         console.log("client stopped typing");
-        socket.broadcast.emit("stoppedTyping", id);
+        var roomId = socket.rooms[Object.keys(socket.rooms)[0]];
+        socket.to(roomId).broadcast.emit("stoppedTyping", id);
     })
-    socket.on("disconnect", reason =>{
-        console.log("Disconnecting user via request: " + socket.id);
-        clients = clients.filter(user => user.id !== socket.id);
-        console.log(clients);
-        socket.disconnect(true);
-        io.emit("userlist-update", clients);
+    socket.on("disconnecting", reason =>{
+        console.log("Disconnecting user: " + socket.id);
+        var roomId = socket.rooms[Object.keys(socket.rooms)[0]];
+        console.log(roomId);
+        console.log(rooms);
+        if(roomId)
+        {
+            var room = rooms.find(room => room.id === roomId);
+            console.log(room);
+            if(room){
+                room.clients = room.clients.filter(user => user.id !== socket.id);
+                io.to(roomId).emit("userlist-update", room.clients);
+            }
+        }
     });
 });
 
