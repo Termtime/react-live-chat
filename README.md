@@ -1,6 +1,8 @@
 ## Live Demo
 
 A live demo of the app can be found at: https://termtime-live-chat.herokuapp.com/
+HomePage:
+![alt text](https://imgur.com/a/4v9IPm4)
 
 ## Running the chat app
 First run npm install on both the root directory and "client" directory.
