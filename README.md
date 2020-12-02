@@ -1,8 +1,19 @@
 ## Live Demo
 
 A live demo of the app can be found at: https://termtime-live-chat.herokuapp.com/
+
 HomePage:
 ![alt text](https://i.imgur.com/i39vSDB.jpg)
+
+Chat room:
+![alt text](https://i.imgur.com/DnSznCQ.jpg)
+
+## User Story
+User can:
+* Specify username and chat room name
+* Send and receive messages
+* See the amount of users that are in the same room and their usernames
+* Exit the room
 
 ## Running the chat app
 First run npm install on both the root directory and "client" directory.
