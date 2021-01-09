@@ -3,10 +3,10 @@
 A live demo of the app can be found at: https://termtime-live-chat.herokuapp.com/
 
 HomePage:
-![alt text](https://i.imgur.com/i39vSDB.jpg)
+![homePage](https://i.imgur.com/i39vSDB.jpg)
 
 Chat room:
-![alt text](https://i.imgur.com/DnSznCQ.jpg)
+![chatRoom](https://i.imgur.com/E1nvsYW.jpg)
 
 ## User Story
 User can:
