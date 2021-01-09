@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./css/App.css";
 import io from "socket.io-client";
 import { MessagesBox } from "./containers/MessagesBox";
@@ -51,7 +51,6 @@ export const App = (props) => {
             var typingUser = usersREF.current.find((obj) => obj.id === id);
             if (typingUser !== undefined) {
                 props.addTypingUser(typingUser);
-                // setUsersTyping([...usersTyping, typingUser]);
             }
         });
 
@@ -61,9 +60,8 @@ export const App = (props) => {
             var stoppedTypingUser = usersREF.current.find(
                 (obj) => obj.id === id
             );
-            if (stoppedTypingUser != undefined) {
+            if (stoppedTypingUser !== undefined) {
                 props.removeTypingUser(id);
-                // setUsersTyping(usersTyping.filter((user) => user.id !== id));
             }
         });
         return () => {

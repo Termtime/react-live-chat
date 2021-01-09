@@ -1,6 +1,5 @@
 import { connect } from "react-redux";
 import { UserListBase } from "../components/UserList";
-import { DISCONNECTED } from "../reducers/actions";
 const mapStateToProps = (state) => {
     return {
         users: state.users,

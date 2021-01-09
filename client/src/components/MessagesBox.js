@@ -24,6 +24,7 @@ export const MessagesBoxBase = (props) => {
                             online
                         </p>
                         <img
+                            alt="exit-button"
                             id="exit-btn"
                             src={exit}
                             onClick={disconnect}

@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Varela&display=swap');
-
 h1, h2, h3, h4, input, label{
   font-family: 'Varela';
 }
@@ -86,16 +85,16 @@ html, .App{
   background-color: #752c2c;
   color:white
 }
-::-webkit-scrollbar {
+#messages::-webkit-scrollbar {
   width: 10px;
 }
 
-::-webkit-scrollbar-track {
+#messages::-webkit-scrollbar-track {
   box-shadow: 0px 0px 10px 10px transparent;
   border: solid 1px transparent;
 }
 
-::-webkit-scrollbar-thumb {
+#messages::-webkit-scrollbar-thumb {
   box-shadow: inset 0 0 20px 10px rgb(71, 65, 65);
   border-radius: 1em;
   border: solid 1px transparent;
@@ -144,7 +143,9 @@ html, .App{
   flex-grow: 1;
 }
 #msgInput{
-  border-radius: 5em;
+  /* border-radius: 5em; */
+  border-top-left-radius: 5em;
+  border-bottom-left-radius: 5em;
   flex-grow: 1;
   margin-top:20px;
   margin-right:10px;
@@ -165,6 +166,7 @@ html, .App{
 .userlist-username{
   color:white;
   padding-left:15px;
+  word-break: break-all;
 }
 .timeStamp{
   color:rgb(190, 190, 190);
@@ -209,6 +211,15 @@ html, .App{
   width:20px;
 }
 
+#emoji-btn{
+  max-width: 40px;
+}
+
+.emojiPicker{
+  position: absolute;
+  bottom:5vh;
+  right:1vw;
+}
 #exit-btn{
   width: 30px;
   cursor: pointer;

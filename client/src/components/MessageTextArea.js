@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-
+import { EmojiButton } from "./EmojiButton";
 let timeout = null;
-let isTyping = false;
 export const MessageTextAreaBase = (props) => {
     const [message, setMessage] = useState("");
-    function sendMessage(e) {
+
+    const sendMessage = (e) => {
         if (e) e.preventDefault();
         if (message.trim().length === 0) return;
         const messageObject = {
@@ -17,16 +17,15 @@ export const MessageTextAreaBase = (props) => {
         setMessage("");
         props.socket.current.emit("send-msg", messageObject);
         stoppedTyping();
-    }
+    };
 
-    function stoppedTyping() {
-        isTyping = false;
+    const stoppedTyping = () => {
         props.socket.current.emit("clientStoppedTyping", props.roomId);
         if (timeout) clearTimeout(timeout);
         timeout = null;
-    }
+    };
 
-    function handleChange(e) {
+    const handleChange = (e) => {
         if (timeout) {
             clearTimeout(timeout);
         } else {
@@ -34,15 +33,19 @@ export const MessageTextAreaBase = (props) => {
         }
         timeout = setTimeout(stoppedTyping, 3000);
         setMessage(e.target.value);
-    }
+    };
 
-    function handleKeyDown(e) {
-        if (e.keyCode == 13 && !e.shiftKey) {
+    const handleKeyDown = (e) => {
+        if (e.keyCode === 13 && !e.shiftKey) {
             if (timeout) clearTimeout(timeout);
             sendMessage();
             if (e) e.preventDefault();
         }
-    }
+    };
+
+    const onEmojiSelected = (event, emojiObject) => {
+        handleChange({ target: { value: message + emojiObject.emoji } });
+    };
     return (
         <form
             style={{ alignItems: "flex-end" }}
@@ -52,12 +55,13 @@ export const MessageTextAreaBase = (props) => {
             <textarea
                 id="msgInput"
                 rows="1"
-                className="form-control"
+                className="form-control mr-0"
                 value={message}
                 onInput={handleChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Write something..."
             ></textarea>
+            <EmojiButton appendEmoji={onEmojiSelected} />
             <button type="submit" className="btn btn-primary">
                 Send
             </button>

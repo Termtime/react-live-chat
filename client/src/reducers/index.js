@@ -8,7 +8,6 @@ import {
     IS_TYPING,
     STOPPED_TYPING,
 } from "./actions";
-import io from "socket.io-client";
 const INITIAL_STATE = {
     ownUser: {},
     socket: {},

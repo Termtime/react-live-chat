@@ -5,7 +5,6 @@ import "../css/homePage.css";
 export const HomePage = (props) => {
     const history = useHistory();
     const [username, setUsername] = useState("");
-    const [newRoom, setNewRoom] = useState("");
     const [room, setRoom] = useState("");
 
     function joinRoom(e) {
@@ -13,8 +12,6 @@ export const HomePage = (props) => {
         props.setRoom({ room: room, username: username });
         history.push("/room");
     }
-
-    function createRoom(e) {}
 
     return (
         <div className="homepage">
