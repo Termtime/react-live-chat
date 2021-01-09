@@ -6,7 +6,6 @@ import { MessageTextArea } from "./containers/MessageTextArea";
 import { UserList } from "./containers/UserList";
 import { useHistory } from "react-router-dom";
 export const App = (props) => {
-    const [usersTyping, setUsersTyping] = useState([]);
     const history = useHistory();
     const socketREF = useRef();
     const usersREF = useRef();
@@ -17,7 +16,6 @@ export const App = (props) => {
             process.env.NODE_ENV !== "production"
                 ? "http://localhost:8000"
                 : "https://termtime-live-chat.herokuapp.com";
-        console.log(url);
         //if roomId or username is not set, then return to homepage and clear redux state
         if (!props.roomId || !props.ownUser.username) {
             history.push("/");
@@ -41,7 +39,6 @@ export const App = (props) => {
         socketREF.current.on("userlist-update", (updatedUserList) => {
             props.updateUserlist(updatedUserList);
             usersREF.current = updatedUserList;
-            console.log("user list has been updated", usersREF.current);
         });
 
         socketREF.current.on("msg", (message) => {
@@ -50,43 +47,61 @@ export const App = (props) => {
 
         socketREF.current.on("isTyping", (id) => {
             //search user in user array
-            console.log("someones typing");
-            console.log(usersREF.current);
-            console.log(id);
+            console.log(`${id} is typing...`);
             var typingUser = usersREF.current.find((obj) => obj.id === id);
-            if (typingUser === undefined) {
-                console.log("undefined user found typing, almost crashed");
-            } else {
-                setUsersTyping([...usersTyping, typingUser]);
+            if (typingUser !== undefined) {
+                props.addTypingUser(typingUser);
+                // setUsersTyping([...usersTyping, typingUser]);
             }
         });
 
         socketREF.current.on("stoppedTyping", (id) => {
+            console.log(`${id} stopped typing...`);
             //search user in user array
             var stoppedTypingUser = usersREF.current.find(
                 (obj) => obj.id === id
             );
-            if (stoppedTypingUser === undefined) {
-                console.log(
-                    "undefined user found to have stopped typing, almost crashed"
-                );
-            } else {
-                setUsersTyping(usersTyping.filter((user) => user.id !== id));
+            if (stoppedTypingUser != undefined) {
+                props.removeTypingUser(id);
+                // setUsersTyping(usersTyping.filter((user) => user.id !== id));
             }
         });
         return () => {
+            socketREF.current.emit("leave", props.roomId);
             socketREF.current.close();
-            props.disconnect();
         };
     }, []);
 
-    function receivedMessage(message) {
+    const renderTypingUsers = () => {
+        let string = "";
+        if (props.typingUsers.length === 1) {
+            string =
+                props.typingUsers.map((user) => user.username) +
+                " is typing...";
+        } else if (props.typingUsers.length > 1) {
+            let usersMinusLast = [
+                ...props.typingUsers.map((user) => user.username),
+            ];
+            usersMinusLast.pop();
+            console.log(usersMinusLast);
+            string =
+                usersMinusLast.join(",") +
+                " and " +
+                props.typingUsers[usersMinusLast.length].username +
+                " are typing...";
+        } else if (props.typingUsers.length > 5) {
+            string = "Multiple people are typing...";
+        } else {
+            string = <div>&nbsp;</div>;
+        }
+        return string;
+    };
+    const receivedMessage = (message) => {
         props.receivedMessage(message);
         document
             .querySelector("#messages")
             .scrollTo(0, document.querySelector("#messages").scrollHeight);
-    }
-
+    };
     return (
         <div className="flex-container col App ">
             <div id="app">
@@ -96,13 +111,9 @@ export const App = (props) => {
                 </div>
 
                 <div id="typingStatus">
-                    {usersTyping.map((user, i) => {
-                        return (
-                            <small key={`${user.id}-typing`}>
-                                {user.username} is typing...
-                            </small>
-                        );
-                    })}
+                    <small key="users-typing" className="text-white">
+                        {renderTypingUsers()}
+                    </small>
                 </div>
                 <MessageTextArea />
             </div>

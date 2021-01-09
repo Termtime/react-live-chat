@@ -16,11 +16,13 @@ export const MessageTextAreaBase = (props) => {
         };
         setMessage("");
         props.socket.current.emit("send-msg", messageObject);
+        stoppedTyping();
     }
 
     function stoppedTyping() {
         isTyping = false;
-        props.socket.current.emit("clientStoppedTyping", props.ownUser.id);
+        props.socket.current.emit("clientStoppedTyping", props.roomId);
+        if (timeout) clearTimeout(timeout);
         timeout = null;
     }
 
@@ -28,7 +30,7 @@ export const MessageTextAreaBase = (props) => {
         if (timeout) {
             clearTimeout(timeout);
         } else {
-            props.socket.current.emit("isTyping");
+            props.socket.current.emit("isTyping", props.roomId);
         }
         timeout = setTimeout(stoppedTyping, 3000);
         setMessage(e.target.value);
@@ -37,7 +39,6 @@ export const MessageTextAreaBase = (props) => {
     function handleKeyDown(e) {
         if (e.keyCode == 13 && !e.shiftKey) {
             if (timeout) clearTimeout(timeout);
-            stoppedTyping();
             sendMessage();
             if (e) e.preventDefault();
         }

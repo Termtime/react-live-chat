@@ -6,6 +6,8 @@ import {
     INITIALIZE,
     RECEIVED_MSG,
     USER_JOINED,
+    IS_TYPING,
+    STOPPED_TYPING,
 } from "../reducers/actions";
 const mapStateToProps = (state) => {
     return {
@@ -14,6 +16,7 @@ const mapStateToProps = (state) => {
         messages: state.messages,
         roomId: state.roomId,
         ownUser: state.ownUser,
+        typingUsers: state.typingUsers,
     };
 };
 
@@ -26,6 +29,10 @@ const mapDispatchToProps = (dispatch) => {
             dispatch({ type: RECEIVED_MSG, payload: msg }),
         updateUserlist: (userlist) =>
             dispatch({ type: USER_JOINED, payload: userlist }),
+        addTypingUser: (typingUser) =>
+            dispatch({ type: IS_TYPING, payload: typingUser }),
+        removeTypingUser: (id) =>
+            dispatch({ type: STOPPED_TYPING, payload: id }),
     };
 };
 

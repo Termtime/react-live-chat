@@ -132,7 +132,8 @@ html, .App{
 .messageText{
   color:white;
   padding-left:10px;
-  text-overflow: ellipsis;
+  word-break: break-all;
+  text-overflow: clip;
   white-space: pre-line;
 }
 

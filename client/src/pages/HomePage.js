@@ -10,10 +10,8 @@ export const HomePage = (props) => {
 
     function joinRoom(e) {
         if (e) e.preventDefault();
-        console.log("pushing route");
         props.setRoom({ room: room, username: username });
         history.push("/room");
-        console.log("route pushed");
     }
 
     function createRoom(e) {}

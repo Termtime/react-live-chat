@@ -7,7 +7,6 @@ import exit from "../resources/img/exit.svg";
 export const MessagesBoxBase = (props) => {
     const history = useHistory();
     function disconnect() {
-        props.disconnect();
         history.push("/");
     }
 

@@ -8,8 +8,8 @@ export const UserListBase = (props) => {
                     <p>Users</p>
                 </div>
                 <div id="users">
-                    {props.users.map((user) => (
-                        <UserItem user={user} />
+                    {props.users.map((user, index) => (
+                        <UserItem key={index} user={user} />
                     ))}
                 </div>
             </div>
