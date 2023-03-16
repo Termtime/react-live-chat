@@ -1,15 +1,19 @@
 import React from "react";
-import { Message } from "../../types";
+import { Message, User } from "../types";
 
-export interface OwnMessageContainerProps {
+export interface MessageContainerProps {
+    user: User;
     message: Message;
 }
 
-export const OwnMessageContainer = ({ message }: OwnMessageContainerProps) => {
+export const MessageContainer = ({ user, message }: MessageContainerProps) => {
     return (
-        <div className="row ownMessage">
+        <div className="row message">
             <div className="col">
                 <div className="row">
+                    <small className="username">{user.username}</small>
+                </div>
+                <div className="row ">
                     <p className="wrap messageText">{message.body}</p>
                 </div>
                 <div className="row timeStamp">

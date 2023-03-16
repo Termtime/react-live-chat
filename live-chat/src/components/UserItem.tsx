@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { User } from "../../types";
+import { User } from "../types";
 import userImg from "../resources/img/user.svg";
 
 export interface UserItemProps {

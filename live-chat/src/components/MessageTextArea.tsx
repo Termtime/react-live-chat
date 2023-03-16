@@ -1,5 +1,5 @@
 import React, { ChangeEvent, FormEvent, useCallback, useState } from "react";
-import { User } from "../../types";
+import { User } from "../types";
 import { EmojiButton, EmojiButtonProps } from "./EmojiButton";
 let timeout: NodeJS.Timeout | null = null;
 

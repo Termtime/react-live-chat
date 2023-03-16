@@ -8,3 +8,12 @@ export interface Message {
     time: string;
     user: User;
 }
+
+export interface AppState {
+    ownUser: User;
+    users: User[];
+    messages: Message[];
+    socket: any;
+    roomId: string;
+    typingUsers: User[];
+}

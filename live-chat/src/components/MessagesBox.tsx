@@ -4,7 +4,7 @@ import { MessageContainer } from "./MessageContainer";
 import { OwnMessageContainer } from "./OwnMessageContainer";
 import exit from "../resources/img/exit.svg";
 import Image from "next/image";
-import { Message, User } from "../../types";
+import { Message, User } from "../types";
 
 interface MessagesBoxProps {
     messages: Message[];
