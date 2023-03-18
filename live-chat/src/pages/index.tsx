@@ -1,24 +1,26 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import "../css/homePage.css";
+import { useRouter } from 'next/router';
+import styles from "../styles/HomePage.module.css";
 
-export interface HomePageProps {}
+export interface HomePageProps {
+    setRoom: (room: { room: string, username: string }) => void;
+}
 
-const HomePage = (props) => {
-    const history = useHistory();
+const HomePage = (props: HomePageProps) => {
+    const router = useRouter();
     const [username, setUsername] = useState("");
     const [room, setRoom] = useState("");
 
-    function joinRoom(e) {
+    const joinRoom: React.FormEventHandler<HTMLFormElement> = (e) => {
         if (e) e.preventDefault();
         props.setRoom({ room: room, username: username });
-        history.push("/room");
-    }
+        router.push("/chat");
+    };
 
     return (
         <div className="homepage">
-            <div className="">
-                <div className="homepage-header">
+            <div>
+                <div className={styles.homePageHeader}>
                     <div className="whiteTxt">
                         <div className="row center">
                             <h1> Welcome to Live-chat!</h1>
@@ -41,7 +43,7 @@ const HomePage = (props) => {
                                     type="text"
                                     className="form-control"
                                     value={username}
-                                    onInput={(e) => setUsername(e.target.value)}
+                                    onInput={(e) => setUsername((e.target as HTMLInputElement).value)}
                                     placeholder="Termtime"
                                     required
                                 />
@@ -62,7 +64,7 @@ const HomePage = (props) => {
                                     className="form-control"
                                     placeholder="Termtime's room"
                                     value={room}
-                                    onInput={(e) => setRoom(e.target.value)}
+                                    onInput={(e) => setRoom((e.target as HTMLInputElement).value)}
                                     required
                                 />
                                 <div className="input-group-append">
@@ -78,7 +80,7 @@ const HomePage = (props) => {
                     </form>
                     <br />
                 </div>
-                <div className="homepage-bottom">
+                <div className={styles.homePageBottom}>
                     <div className="row center">
                         <div className="col-3">
                             <div className="card ">

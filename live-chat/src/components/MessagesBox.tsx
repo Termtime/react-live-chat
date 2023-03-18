@@ -1,27 +1,28 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
+import { useRouter } from "next/router";
 import { MessageContainer } from "./MessageContainer";
 import { OwnMessageContainer } from "./OwnMessageContainer";
-import exit from "../resources/img/exit.svg";
+import exit from "../img/exit.svg";
 import Image from "next/image";
 import { Message, User } from "../types";
+import { MessagesBoxConnection } from "../redux/connections/MessagesBox";
 
 interface MessagesBoxProps {
     messages: Message[];
-    roomId: string;
+    roomId: string | null;
     users: User[];
-    ownUser: User;
+    ownUser: User | null;
 }
 
-export const MessagesBoxBase = ({
+const MessagesBoxBase = ({
     roomId,
     users,
     ownUser,
     messages,
 }: MessagesBoxProps) => {
-    const history = useHistory();
+    const router = useRouter();
     function disconnect() {
-        history.push("/");
+        router.push("/");
     }
 
     return (
@@ -48,7 +49,7 @@ export const MessagesBoxBase = ({
             <div id="messages" className="row ">
                 <div className="col">
                     {messages.map((msg, i) => {
-                        if (msg.user.id === ownUser.id) {
+                        if (msg.user.id === ownUser?.id) {
                             return (
                                 <OwnMessageContainer key={i} message={msg} />
                             );
@@ -67,3 +68,5 @@ export const MessagesBoxBase = ({
         </div>
     );
 };
+
+export const MessagesBox = MessagesBoxConnection(MessagesBoxBase);

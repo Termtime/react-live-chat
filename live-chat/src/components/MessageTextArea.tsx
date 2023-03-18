@@ -1,15 +1,17 @@
-import React, { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
+import { Socket } from "socket.io-client";
+import { MessageTextAreaConnection } from "../redux/connections/MessageTextArea";
 import { User } from "../types";
 import { EmojiButton, EmojiButtonProps } from "./EmojiButton";
 let timeout: NodeJS.Timeout | null = null;
 
 interface MessageTextAreaProps {
-    socket: React.MutableRefObject<SocketIOClient.Socket>;
-    ownUser: User;
-    roomId: string;
+    socket: React.MutableRefObject<Socket>;
+    ownUser: User | null;
+    roomId: string | null;
 }
 
-export const MessageTextAreaBase = ({
+const MessageTextAreaBase = ({
     socket,
     roomId,
     ownUser,
@@ -93,3 +95,5 @@ export const MessageTextAreaBase = ({
         </form>
     );
 };
+
+export const MessageTextArea = MessageTextAreaConnection(MessageTextAreaBase);

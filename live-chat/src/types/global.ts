@@ -10,10 +10,10 @@ export interface Message {
 }
 
 export interface AppState {
-    ownUser: User;
+    ownUser: User | null;
     users: User[];
     messages: Message[];
-    socket: any;
-    roomId: string;
+    socket: any | null;
+    roomId: string | null;
     typingUsers: User[];
 }

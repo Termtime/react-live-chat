@@ -1,4 +1,5 @@
 import React from "react";
+import { UserListConnection } from "../redux/connections/UserList";
 import { User } from "../types";
 import { UserItem } from "./UserItem";
 
@@ -6,7 +7,7 @@ export interface UserListProps {
     users: User[];
 }
 
-export const UserListBase = ({ users }: UserListProps) => {
+const UserListBase = ({ users }: UserListProps) => {
     return (
         <div className="userList-container">
             <div className="userList">
@@ -22,3 +23,5 @@ export const UserListBase = ({ users }: UserListProps) => {
         </div>
     );
 };
+
+export const UserList = UserListConnection(UserListBase);
