@@ -1,102 +1,92 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { connect as ioConnect, Socket } from "socket.io-client";
 import { MessagesBox, MessageTextArea, UserList } from "@/components";
 import { useRouter } from "next/router";
-import { Message, User } from "../../types";
+import { Message, RoomHandshake, User } from "../../types";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/toolkit/store";
+import {
+    isTyping,
+    joinRoom,
+    leaveRoom,
+    stoppedTyping,
+    updateUserList,
+} from "../../redux/toolkit/features/chatSlice";
 
-interface ChatPageProps {
-    disconnect: () => void;
-    initialize: (socket: any) => void;
-    connect: (userInfo: User) => void;
-    updateUserlist: (updatedUserList: User[]) => void;
-    addTypingUser: (typingUser: User) => void;
-    removeTypingUser: (id: string) => void;
-    roomId: string | null;
-    ownUser: User | null;
-    typingUsers: User[];
-}
-
-const ChatPage = ({
-    roomId,
-    ownUser,
-    addTypingUser,
-    connect,
-    disconnect,
-    initialize,
-    removeTypingUser,
-    updateUserlist,
-    typingUsers
-}: ChatPageProps) => {
+const ChatPage = () => {
     const router = useRouter();
-    const socketREF = useRef<Socket | null>(null);
-    const usersREF = useRef<User[]>([]);
+    const { socket, roomId, ownUser, users, typingUsers } = useSelector(
+        (state: RootState) => state.chat
+    );
 
     const receivedMessage = useCallback((message: Message) => {
-        if(typeof window !== "undefined"){
+        if (typeof window !== "undefined") {
             receivedMessage(message);
-            document.querySelector("#messages")?.scrollTo(0, document?.querySelector("#messages")?.scrollHeight || 0);
+            document
+                .querySelector("#messages")
+                ?.scrollTo(
+                    0,
+                    document?.querySelector("#messages")?.scrollHeight || 0
+                );
         }
     }, []);
-    
+
     useEffect(() => {
-        require("dotenv").config();
-        let url =
-            process.env.NODE_ENV !== "production"
-                ? "http://localhost:8000"
-                : "https://termtime-live-chat.herokuapp.com";
         //if roomId or username is not set, then return to homepage and clear redux state
-        if (!roomId || !ownUser?.username) {
+        if (!roomId || !ownUser) {
             router.push("/");
-            disconnect();
+            leaveRoom();
             return;
         }
+    }, [ownUser, roomId, router]);
 
-        socketREF.current = ioConnect(url);
-        initialize(socketREF);
-        socketREF.current.on("own-id", (id) => {
-            var userInfo = {
-                username: ownUser.username,
-                id: id,
-                room: roomId,
-            };
+    useEffect(() => {
+        if (socket) {
+            socket.on("own-id", (userId: string) => {
+                var handshakeInfo: RoomHandshake = {
+                    username: ownUser!.username,
+                    id: userId,
+                    roomId: roomId!,
+                };
 
-            connect(userInfo);
-            socketREF.current?.emit("presentation", userInfo);
-        });
+                joinRoom(handshakeInfo);
+            });
 
-        socketREF.current.on("userlist-update", (updatedUserList) => {
-            updateUserlist(updatedUserList);
-            usersREF.current = updatedUserList;
-        });
+            socket.on("userlist-update", (updatedUserList: User[]) => {
+                updateUserList(updatedUserList);
+            });
 
-        socketREF.current.on("msg", (message) => {
-            receivedMessage(message);
-        });
+            socket.on("msg", (message: Message) => {
+                receivedMessage(message);
+            });
 
-        socketREF.current.on("isTyping", (id) => {
-            //search user in user array
-            console.log(`${id} is typing...`);
-            var typingUser = usersREF.current.find((obj) => obj.id === id);
-            if (typingUser !== undefined) {
-                addTypingUser(typingUser);
-            }
-        });
+            socket.on("isTyping", (userId: string) => {
+                // search user in user array
+                console.log(`${userId} is typing...`);
+                const typingUser = users.find((obj) => obj.id === userId);
+                if (typingUser !== undefined) {
+                    isTyping(typingUser);
+                }
+            });
 
-        socketREF.current.on("stoppedTyping", (id) => {
-            console.log(`${id} stopped typing...`);
-            //search user in user array
-            var stoppedTypingUser = usersREF.current.find(
-                (obj) => obj.id === id
-            );
-            if (stoppedTypingUser !== undefined) {
-                removeTypingUser(id);
-            }
-        });
+            socket.on("stoppedTyping", (userId: string) => {
+                console.log(`${userId} stopped typing...`);
+                //search user in user array
+                const stoppedTypingUser = users.find(
+                    (obj) => obj.id === userId
+                );
+                if (stoppedTypingUser !== undefined) {
+                    stoppedTyping(stoppedTypingUser);
+                }
+            });
+        }
+
         return () => {
-            socketREF.current?.emit("leave", roomId);
-            socketREF.current?.close();
+            if (socket) {
+                socket?.emit("leave", roomId);
+                socket.close();
+            }
         };
-    }, [addTypingUser, connect, disconnect, initialize, ownUser?.username, receivedMessage, removeTypingUser, roomId, router, updateUserlist]);
+    }, [socket, users, receivedMessage, roomId]);
 
     const renderTypingUsers = () => {
         let string: string | React.ReactElement = "";
@@ -118,7 +108,7 @@ const ChatPage = ({
         }
         return string;
     };
-    
+
     return (
         <div className="flex-container col App ">
             <div id="app">

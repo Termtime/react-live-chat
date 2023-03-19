@@ -17,3 +17,9 @@ export interface AppState {
     roomId: string | null;
     typingUsers: User[];
 }
+
+export interface RoomHandshake {
+    username: string;
+    id: string;
+    roomId: string;
+}

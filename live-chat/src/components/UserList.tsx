@@ -1,13 +1,11 @@
 import React from "react";
-import { UserListConnection } from "../redux/connections/UserList";
-import { User } from "../types";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/toolkit/store";
 import { UserItem } from "./UserItem";
 
-export interface UserListProps {
-    users: User[];
-}
+export const UserList = () => {
+    const { users } = useSelector((state: RootState) => state.chat);
 
-const UserListBase = ({ users }: UserListProps) => {
     return (
         <div className="userList-container">
             <div className="userList">
@@ -23,5 +21,3 @@ const UserListBase = ({ users }: UserListProps) => {
         </div>
     );
 };
-
-export const UserList = UserListConnection(UserListBase);

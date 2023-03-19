@@ -4,23 +4,15 @@ import { MessageContainer } from "./MessageContainer";
 import { OwnMessageContainer } from "./OwnMessageContainer";
 import exit from "../img/exit.svg";
 import Image from "next/image";
-import { Message, User } from "../types";
-import { MessagesBoxConnection } from "../redux/connections/MessagesBox";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/toolkit/store";
 
-interface MessagesBoxProps {
-    messages: Message[];
-    roomId: string | null;
-    users: User[];
-    ownUser: User | null;
-}
-
-const MessagesBoxBase = ({
-    roomId,
-    users,
-    ownUser,
-    messages,
-}: MessagesBoxProps) => {
+export const MessagesBox = () => {
     const router = useRouter();
+    const { ownUser, messages, roomId, users } = useSelector(
+        (state: RootState) => state.chat
+    );
+
     function disconnect() {
         router.push("/");
     }
@@ -68,5 +60,3 @@ const MessagesBoxBase = ({
         </div>
     );
 };
-
-export const MessagesBox = MessagesBoxConnection(MessagesBoxBase);

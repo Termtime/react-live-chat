@@ -1,19 +1,16 @@
 import React, { useState } from "react";
 import { useRouter } from 'next/router';
 import styles from "../styles/HomePage.module.css";
+import { startConnection } from "../redux/toolkit/features/chatSlice";
 
-export interface HomePageProps {
-    setRoom: (room: { room: string, username: string }) => void;
-}
-
-const HomePage = (props: HomePageProps) => {
+const HomePage= () => {
     const router = useRouter();
     const [username, setUsername] = useState("");
-    const [room, setRoom] = useState("");
+    const [roomName, setRoomName] = useState("");
 
-    const joinRoom: React.FormEventHandler<HTMLFormElement> = (e) => {
+    const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         if (e) e.preventDefault();
-        props.setRoom({ room: room, username: username });
+        startConnection({ room: roomName, username});
         router.push("/chat");
     };
 
@@ -29,7 +26,7 @@ const HomePage = (props: HomePageProps) => {
                             <h3> Join chat rooms, and talk to your friends!</h3>
                         </div>
                     </div>
-                    <form onSubmit={joinRoom}>
+                    <form onSubmit={onSubmit}>
                         <div className="offset-2 col-8 ">
                             <div className="input-group flex-nowrap">
                                 <div className="input-group-prepend">
@@ -63,8 +60,8 @@ const HomePage = (props: HomePageProps) => {
                                     type="text"
                                     className="form-control"
                                     placeholder="Termtime's room"
-                                    value={room}
-                                    onInput={(e) => setRoom((e.target as HTMLInputElement).value)}
+                                    value={roomName}
+                                    onInput={(e) => setRoomName((e.target as HTMLInputElement).value)}
                                     required
                                 />
                                 <div className="input-group-append">
@@ -133,5 +130,6 @@ const HomePage = (props: HomePageProps) => {
         </div>
     );
 };
+
 
 export default HomePage;

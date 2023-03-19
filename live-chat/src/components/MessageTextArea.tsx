@@ -1,22 +1,14 @@
 import React, { ChangeEvent, useCallback, useState } from "react";
-import { Socket } from "socket.io-client";
-import { MessageTextAreaConnection } from "../redux/connections/MessageTextArea";
-import { User } from "../types";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/toolkit/store";
 import { EmojiButton, EmojiButtonProps } from "./EmojiButton";
 let timeout: NodeJS.Timeout | null = null;
 
-interface MessageTextAreaProps {
-    socket: React.MutableRefObject<Socket>;
-    ownUser: User | null;
-    roomId: string | null;
-}
 
-const MessageTextAreaBase = ({
-    socket,
-    roomId,
-    ownUser,
-}: MessageTextAreaProps) => {
+export const MessageTextArea = () => {
     const [message, setMessage] = useState("");
+
+    const { socket, roomId, ownUser } = useSelector((state: RootState) => state.chat);
 
     const stoppedTyping = useCallback(() => {
         socket.current.emit("clientStoppedTyping", roomId);
@@ -96,4 +88,3 @@ const MessageTextAreaBase = ({
     );
 };
 
-export const MessageTextArea = MessageTextAreaConnection(MessageTextAreaBase);
