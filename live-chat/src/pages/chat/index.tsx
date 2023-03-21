@@ -4,21 +4,28 @@ import { useRouter } from "next/router";
 import { Message, RoomHandshake, User } from "../../types";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/toolkit/store";
+import { UserEncryptedMessage } from "../../types/global";
 import {
-    isTyping,
+    userStartedTyping,
     joinRoom,
     leaveRoom,
-    stoppedTyping,
-    updateUserList,
+    userStoppedTyping,
+    userLeft,
+    userJoined,
+    receivedMessage,
 } from "../../redux/toolkit/features/chatSlice";
 
 const ChatPage = () => {
     const router = useRouter();
-    const { socket, roomId, ownUser, users, typingUsers } = useSelector(
-        (state: RootState) => state.chat
-    );
+    const {
+        socket,
+        roomId,
+        user: ownUser,
+        users,
+        typingUsers,
+    } = useSelector((state: RootState) => state.chat);
 
-    const receivedMessage = useCallback((message: Message) => {
+    const onReceivedMessage = useCallback((message: UserEncryptedMessage) => {
         if (typeof window !== "undefined") {
             receivedMessage(message);
             document
@@ -41,52 +48,31 @@ const ChatPage = () => {
 
     useEffect(() => {
         if (socket) {
-            socket.on("own-id", (userId: string) => {
-                var handshakeInfo: RoomHandshake = {
-                    username: ownUser!.username,
-                    id: userId,
-                    roomId: roomId!,
-                };
+            socket.on("userJoined", (user: User) => userJoined(user));
 
-                joinRoom(handshakeInfo);
-            });
+            socket.on("userLeft", (user: User) => userLeft(user));
 
-            socket.on("userlist-update", (updatedUserList: User[]) => {
-                updateUserList(updatedUserList);
-            });
+            socket.on("message", (message: UserEncryptedMessage) =>
+                onReceivedMessage(message)
+            );
 
-            socket.on("msg", (message: Message) => {
-                receivedMessage(message);
-            });
+            socket.on("userStartedTyping", (user: User) =>
+                userStartedTyping(user)
+            );
 
-            socket.on("isTyping", (userId: string) => {
-                // search user in user array
-                console.log(`${userId} is typing...`);
-                const typingUser = users.find((obj) => obj.id === userId);
-                if (typingUser !== undefined) {
-                    isTyping(typingUser);
-                }
-            });
-
-            socket.on("stoppedTyping", (userId: string) => {
-                console.log(`${userId} stopped typing...`);
-                //search user in user array
-                const stoppedTypingUser = users.find(
-                    (obj) => obj.id === userId
-                );
-                if (stoppedTypingUser !== undefined) {
-                    stoppedTyping(stoppedTypingUser);
-                }
-            });
+            socket.on("userStoppedTyping", (user: User) =>
+                userStoppedTyping(user)
+            );
         }
 
         return () => {
-            if (socket) {
-                socket?.emit("leave", roomId);
+            if (socket && roomId) {
+                socket?.emit("leaveRoom", roomId);
                 socket.close();
+                leaveRoom();
             }
         };
-    }, [socket, users, receivedMessage, roomId]);
+    }, [socket, users, roomId, ownUser, onReceivedMessage]);
 
     const renderTypingUsers = () => {
         let string: string | React.ReactElement = "";

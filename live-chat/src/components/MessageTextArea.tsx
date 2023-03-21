@@ -1,81 +1,86 @@
 import React, { ChangeEvent, useCallback, useState } from "react";
 import { useSelector } from "react-redux";
+import { sendMessage, startTyping, stopTyping } from "../redux/toolkit/features/chatSlice";
 import { RootState } from "../redux/toolkit/store";
+import { Message } from "../types";
 import { EmojiButton, EmojiButtonProps } from "./EmojiButton";
 let timeout: NodeJS.Timeout | null = null;
 
 
 export const MessageTextArea = () => {
-    const [message, setMessage] = useState("");
+    const [text, setText] = useState("");
 
-    const { socket, roomId, ownUser } = useSelector((state: RootState) => state.chat);
+    const { socket, roomId, user: ownUser } = useSelector((state: RootState) => state.chat);
 
-    const stoppedTyping = useCallback(() => {
-        socket.current.emit("clientStoppedTyping", roomId);
-        if (timeout) clearTimeout(timeout);
-        timeout = null;
-    }, [socket, roomId]);
 
-    const sendMessage = useCallback(
+    const onSendMessage = useCallback(
         (e?: React.FormEvent) => {
             if (e) e.preventDefault();
-            if (message.trim().length === 0) return;
-            const messageObject = {
-                body: message,
-                user: ownUser,
-                roomId: roomId,
-                date: new Date(),
-                time: new Date().toLocaleTimeString("en-US"),
-            };
-            setMessage("");
-            socket.current.emit("send-msg", messageObject);
-            stoppedTyping();
+            if (text.trim().length !== 0 && socket && ownUser && roomId){
+
+                const message : Message = {
+                    body: text,
+                    user: {
+                        id: ownUser?.id,
+                        username: ownUser?.username,
+                    },
+                    time: new Date().toLocaleTimeString("en-US"),
+                };
+                setText("");
+                stopTyping(roomId);
+                sendMessage({message, roomId});
+            }else{
+                throw new Error("Cannot send message. Check your connection and make sure you are authenticated.");
+            }
+            
         },
-        [message, ownUser, roomId, socket, stoppedTyping]
+        [text, socket, ownUser, roomId]
     );
 
     const handleChange = useCallback(
         (e: ChangeEvent<HTMLTextAreaElement>) => {
-            if (timeout) {
-                clearTimeout(timeout);
-            } else {
-                socket.current.emit("isTyping", roomId);
+            if(roomId){
+                if (timeout) {
+                    clearTimeout(timeout);
+                } else {
+                    startTyping(roomId);
+                }
+                timeout = setTimeout(() => stopTyping(roomId), 3000);
+                setText(e.target.value);
             }
-            timeout = setTimeout(stoppedTyping, 3000);
-            setMessage(e.target.value);
         },
-        [socket, roomId, stoppedTyping]
+        [roomId]
     );
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (e.keyCode === 13 && !e.shiftKey) {
                 if (timeout) clearTimeout(timeout);
-                sendMessage();
+                onSendMessage();
                 if (e) e.preventDefault();
             }
         },
-        [sendMessage]
+        [onSendMessage]
     );
 
     const onEmojiSelected= useCallback<NonNullable<EmojiButtonProps["onClick"]>>(
         (emojiObject) => {
-            handleChange({ target: { value: message + emojiObject.emoji } } as ChangeEvent<HTMLTextAreaElement>);
+            handleChange({ target: { value: text + emojiObject.emoji } } as ChangeEvent<HTMLTextAreaElement>);
         },
-        [message, handleChange]
+        [text, handleChange]
     );
 
     return (
         <form
             style={{ alignItems: "flex-end" }}
             className="row form-inline"
-            onSubmit={sendMessage}
+            onSubmit={onSendMessage}
         >
             <textarea
                 id="msgInput"
                 rows={1}
                 className="form-control mr-0"
-                value={message}
+                value={text}
                 onInput={handleChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Write something..."

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from 'next/router';
 import styles from "../styles/HomePage.module.css";
-import { startConnection } from "../redux/toolkit/features/chatSlice";
+import { connectServer } from "../redux/toolkit/features/chatSlice";
 
 const HomePage= () => {
     const router = useRouter();
@@ -10,7 +10,7 @@ const HomePage= () => {
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         if (e) e.preventDefault();
-        startConnection({ room: roomName, username});
+        connectServer({ room: roomName, username});
         router.push("/chat");
     };
 

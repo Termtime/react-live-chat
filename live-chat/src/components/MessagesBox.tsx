@@ -9,9 +9,12 @@ import { RootState } from "../redux/toolkit/store";
 
 export const MessagesBox = () => {
     const router = useRouter();
-    const { ownUser, messages, roomId, users } = useSelector(
-        (state: RootState) => state.chat
-    );
+    const {
+        user: ownUser,
+        messages,
+        roomId,
+        users,
+    } = useSelector((state: RootState) => state.chat);
 
     function disconnect() {
         router.push("/");

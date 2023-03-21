@@ -1,21 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { Message, RoomHandshake, User } from "../../../types";
+import { AuthUser, Message, RoomHandshake, User, UserEncryptedMessage } from "../../../types";
 import io from "socket.io-client";
 import { Socket } from "socket.io-client";
+import { ClientToServerEvents, ServerToClientEvents } from "../../../io/events";
+import { decryptMessage, encryptMessage, getPrivateKey } from "../../../utils";
 
 export interface ChatState {
-    ownUser: User | null;
+    user: AuthUser | null;
     users: User[];
     messages: Message[];
-    socket: Socket | null;
+    socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
     roomId: string | null;
     typingUsers: User[];
     loading: boolean;
 }
 
 const initialState: ChatState = {
-    ownUser: null,
+    user: null,
     users: [],
     messages: [],
     socket: null,
@@ -29,7 +31,11 @@ export const chatSlice = createSlice({
     initialState,
     reducers: {
         leaveRoom: (state) => {
-            state = initialState;
+            if(state.roomId){
+                state.socket?.emit("leaveRoom", state.roomId);
+                state.socket?.close();
+            }
+            state = initialState as any;
         },
         connectServer: (
             state,
@@ -42,37 +48,81 @@ export const chatSlice = createSlice({
                     : "https://termtime-live-chat.herokuapp.com";
 
             const socket = io(url);
-            state.socket = socket;
+            state.socket = socket as any;
             state.roomId = action.payload.room;
-            state.ownUser = {
+            state.user = {
                 username: action.payload.username,
-                id: socket?.id,
+                id: socket.id,
+                privateKey: getPrivateKey(),
             };
         },
         joinRoom: (state, action: PayloadAction<RoomHandshake>) => {
-            state.socket?.emit("presentation", action.payload);
-            state.loading = false;
+            state.socket?.emit("joinRoom", action.payload, (userList: User[]) => {
+                state.loading = false;
+                state.users = userList;
+            });
         },
-        userJoined: (state, action: PayloadAction<User[]>) => {
-            state.users = action.payload;
+        userJoined: (state, action: PayloadAction<User>) => {
+            state.users = [...state.users, action.payload];
         },
-        isTyping: (state, action: PayloadAction<User>) => {
+        userLeft: (state, action: PayloadAction<User>) => {
+            state.users = state.users.filter(
+                (user) => user.id !== action.payload.id
+            );
+        },
+        startTyping: (state, action: PayloadAction<string>) => {
+            state.socket?.emit("startedTyping", action.payload);
+        },
+        stopTyping: (state, action: PayloadAction<string>) => {
+            state.socket?.emit("stoppedTyping", action.payload);
+        },
+        userStartedTyping: (state, action: PayloadAction<User>) => {
             state.typingUsers = [...state.typingUsers, action.payload];
         },
-        stoppedTyping: (state, action: PayloadAction<User>) => {
+        userStoppedTyping: (state, action: PayloadAction<User>) => {
             state.typingUsers = state.typingUsers.filter(
                 (user) => user.id !== action.payload.id
             );
         },
-        receivedMessage: (state, action: PayloadAction<Message>) => {
-            state.messages = [...state.messages, action.payload];
+        receivedMessage: (state, action: PayloadAction<UserEncryptedMessage>) => {
+            // Decrypt message
+            if(state.user && state.user.privateKey){
+                try{
+                    const decryptedMessage = decryptMessage(
+                        action.payload.message,
+                        state.user!.privateKey!
+                    );
+        
+                    state.messages = [
+                        ...state.messages,
+                        decryptedMessage,
+                    ];
+                }catch(e){
+                    console.error(e)
+                }
+            }
+
+            console.error("Could not decrypt message. User is not authenticated.");
         },
-        sendMessage: (state, action: PayloadAction<Message>) => {
-            state.messages = [...state.messages, action.payload];
-        },
-        updateUserList: (state, action: PayloadAction<User[]>) => {
-            state.users = action.payload;
-        },
+        sendMessage: (state, action: PayloadAction<{message: Message, roomId: string}>) => {
+            // Encrypt message
+            const encryptedMessage = encryptMessage(
+                action.payload.message,
+                state.user?.privateKey as string
+            )
+
+            const userEncryptedMessage: UserEncryptedMessage = {
+                message: encryptedMessage,
+                recipientsPublicKeys: state.users.filter((user) => user.publicKey !== null).map((user) => user.publicKey!),
+                roomId: action.payload.roomId,
+            }
+
+            
+
+            state.socket?.emit("message", userEncryptedMessage);
+            state.messages = [...state.messages, action.payload.message];
+        }
+        
     },
 });
 
@@ -81,12 +131,14 @@ export const {
     leaveRoom,
     joinRoom,
     connectServer,
-    isTyping,
-    receivedMessage,
-    stoppedTyping,
-    userJoined,
+    userStartedTyping,
     sendMessage,
-    updateUserList,
+    receivedMessage,
+    userStoppedTyping,
+    userJoined,
+    userLeft,
+    startTyping,
+    stopTyping,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

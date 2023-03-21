@@ -1,9 +1,20 @@
-import { User, Message } from "../types";
+import { User, Message, RoomHandshake, UserEncryptedMessage } from "../types";
 
 export interface ServerToClientEvents {
-    "user-joined": (users: User[]) => void;
-    "user-left": (users: User[]) => void;
-    message: (message: Message) => void;
-    "is-typing": (user: User) => void;
-    "stopped-typing": (user: User) => void;
+    userJoined: (user: User) => void;
+    userLeft: (user: User) => void;
+    message: (userEncryptedMessages: UserEncryptedMessage) => void;
+    userStartedTyping: (user: User) => void;
+    userStoppedTyping: (user: User) => void;
+}
+
+export interface ClientToServerEvents {
+    joinRoom: (
+        handshake: RoomHandshake,
+        callback: (userList: User[]) => void
+    ) => void;
+    leaveRoom: (roomId: string) => void;
+    message: (userEncryptedMessages: UserEncryptedMessage) => void;
+    startedTyping: (roomId: string) => void;
+    stoppedTyping: (roomId: string) => void;
 }

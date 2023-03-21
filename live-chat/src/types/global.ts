@@ -1,6 +1,13 @@
 export interface User {
     username: string;
     id: string;
+    publicKey?: string;
+}
+
+export interface AuthUser {
+    username: string;
+    id: string;
+    privateKey: string | null;
 }
 
 export interface Message {
@@ -9,17 +16,16 @@ export interface Message {
     user: User;
 }
 
-export interface AppState {
-    ownUser: User | null;
-    users: User[];
-    messages: Message[];
-    socket: any | null;
-    roomId: string | null;
-    typingUsers: User[];
+export interface UserEncryptedMessage {
+    /**
+     * Encrypted Message in string form
+     */
+    message: string;
+    recipientsPublicKeys: string[];
+    roomId: string;
 }
 
 export interface RoomHandshake {
-    username: string;
-    id: string;
+    user: User;
     roomId: string;
 }
