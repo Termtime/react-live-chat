@@ -19,7 +19,7 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    const url = "http://192.168.0.100:3000";
+    const url = "http://localhost:3000";
 
     // fetch(url);
     console.log("Connecting to server");

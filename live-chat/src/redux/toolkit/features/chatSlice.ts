@@ -1,184 +1,234 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import { AuthUser, Message, PublicAuthUser, RoomHandshake, User, UserEncryptedMessage } from "../../../types";
-import { decryptMessage, encryptMessage, generateKeys } from "../../../utils";
-import { SocketConnection } from "../../../io/connection";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
+import type {PayloadAction} from "@reduxjs/toolkit";
+import {
+  AuthUser,
+  Message,
+  PublicAuthUser,
+  RoomHandshake,
+  User,
+  UserEncryptedMessage,
+} from "../../../types";
+import {decryptMessage, encryptMessage, generateKeys} from "../../../utils";
+import {SocketConnection} from "../../../io/connection";
+import {RootState} from "../store";
 
 export interface ChatState {
-    user: AuthUser | null;
-    users: User[];
-    messages: Message[];
-    roomId: string | null;
-    typingUsers: User[];
-    loading: boolean;
+  user: AuthUser | null;
+  users: User[];
+  messages: Message[];
+  roomId: string | null;
+  typingUsers: User[];
+  loading: boolean;
 }
 
 const initialState: ChatState = {
-    user: null,
-    users: [],
-    messages: [],
-    roomId: null,
-    typingUsers: [],
-    loading: true,
+  user: null,
+  users: [],
+  messages: [],
+  roomId: null,
+  typingUsers: [],
+  loading: true,
 };
 
 interface JoinRoomPayload {
-    username: string;
-    roomId: string;
+  username: string;
+  roomId: string;
 }
 
 export const joinRoom = createAsyncThunk(
-    'chat/joinRoom',
-    async ({username, roomId } :JoinRoomPayload, thunkAPI) => {
-        const {privateKey, publicKey} = generateKeys();
+  "chat/joinRoom",
+  async ({username, roomId}: JoinRoomPayload, thunkAPI) => {
+    const {privateKey, publicKey} = await generateKeys();
 
-        const authUser: AuthUser = {
-            username,
-            privateKey,
-            publicKey,
-        }
+    const authUser: AuthUser = {
+      username,
+      privateKey,
+      publicKey,
+    };
 
-        console.log(authUser);
+    console.log(authUser);
 
-       return { authUser, roomId};
+    return {authUser, roomId};
+  }
+);
+
+export const sendMessage = createAsyncThunk(
+  "chat/sendMessage",
+  async (payload: {message: Message; roomId: string}, thunkAPI) => {
+    console.log("=========== SEND MESSAGE ===========\n", payload);
+    const state = thunkAPI.getState() as RootState;
+    const {user} = state.chat;
+    const {message, roomId} = payload;
+
+    console.log("user", user);
+
+    if (!user || !roomId) {
+      throw new Error("User or Room ID not set");
     }
-  )
+
+    const encryptedMessages = [] as UserEncryptedMessage[];
+
+    const channelMembers = state.chat.users.filter((u) => u.id !== user.id);
+
+    for (const user of channelMembers) {
+      if (user.publicKey) {
+        const encryptedMessage = await encryptMessage(message, user.publicKey);
+        const userEncryptedMessage: UserEncryptedMessage = {
+          message: encryptedMessage,
+          recipient: user,
+          roomId,
+        };
+
+        encryptedMessages.push(userEncryptedMessage);
+      } else {
+        console.log("User does not have a public key set", user);
+      }
+    }
+
+    return {message, encryptedMessages};
+  }
+);
+
+export const receivedMessage = createAsyncThunk(
+  "chat/receivedMessage",
+  async (message: UserEncryptedMessage, thunkAPI) => {
+    console.log("=========== RECEIVED MESSAGE ===========\n", message);
+    const state = thunkAPI.getState() as RootState;
+    const {user} = state.chat;
+
+    if (!user) {
+      throw new Error("User not set");
+    }
+
+    const decryptedMessage = await decryptMessage(
+      message.message,
+      user.privateKey
+    );
+
+    return {message: decryptedMessage, roomId: message.roomId};
+  }
+);
 
 export const chatSlice = createSlice({
-    name: "chat",
-    initialState,
-    reducers: {
-        leaveRoom: (state) => {
-            console.log("Leave Room")
-            const socket = SocketConnection.getInstance().getSocket();
-            
-            if(state.roomId){
-                socket.emit("leaveRoom", state.roomId);
-            } 
-            state = initialState as any;
-        },
-        handshakeAcknowledge: (state, action: PayloadAction<{users: User[], socketId: string }>) => {
-            console.log("=========== HANDSHAKE RESPONSE ===========\n", action.payload)
-            state.users = action.payload.users;
-            state.loading = false;
-            state.user!.id = action.payload.socketId;
-        },
-        userJoined: (state, action: PayloadAction<User>) => {
-            console.log("=========== USER JOINED ===========\n", action.payload)
-            state.users = [...state.users, action.payload];
-        },
-        userLeft: (state, action: PayloadAction<User>) => {
-            console.log("=========== USER LEFT ===========\n", action.payload)
-            state.users = state.users.filter(
-                (user) => user.id !== action.payload.id
-            );
-        },
-        startTyping: (state, action: PayloadAction<string>) => {
-            console.log("=========== START TYPING ===========\n", action.payload)
-            const socket = SocketConnection.getInstance().getSocket();
-            socket.emit("startedTyping", action.payload);
-        },
-        stopTyping: (state, action: PayloadAction<string>) => {
-            console.log("=========== STOP TYPING ===========\n", action.payload)
-        const socket = SocketConnection.getInstance().getSocket();
+  name: "chat",
+  initialState,
+  reducers: {
+    leaveRoom: (state) => {
+      console.log("Leave Room");
+      const socket = SocketConnection.getInstance().getSocket();
 
-            socket.emit("stoppedTyping", action.payload);
-        },
-        userStartedTyping: (state, action: PayloadAction<User>) => {
-            console.log("=========== USER STARTED TYPING ===========\n", action.payload)
-            state.typingUsers = [...state.typingUsers, action.payload];
-        },
-        userStoppedTyping: (state, action: PayloadAction<User>) => {
-            console.log("=========== USER STOPPED TYPING ===========\n", action.payload)
-            state.typingUsers = state.typingUsers.filter(
-                (user) => user.id !== action.payload.id
-            );
-        },
-        receivedMessage: (state, action: PayloadAction<UserEncryptedMessage>) => {
-            console.log("=========== RECEIVED MESSAGE ===========\n", action.payload)
-            // Decrypt message
-            if(state.user && state.user.privateKey){
-                try{
-                    const decryptedMessage = decryptMessage(
-                        action.payload.message,
-                        state.user!.privateKey!
-                    );
-        
-                    state.messages = [
-                        ...state.messages,
-                        decryptedMessage,
-                    ];
-                }catch(e){
-                    console.error(e)
-                }
-            }
-
-            console.error("Could not decrypt message. User is not authenticated.");
-        },
-        sendMessage: (state, action: PayloadAction<{message: Message, roomId: string}>) => {
-            console.log("=========== SEND MESSAGE ===========\n", action.payload)
-            // Encrypt message
-            const encryptedMessage = encryptMessage(
-                action.payload.message,
-                state.user?.privateKey as string
-            )
-
-            const userEncryptedMessage: UserEncryptedMessage = {
-                message: encryptedMessage,
-                recipientsPublicKeys: state.users.filter((user) => user.publicKey !== null).map((user) => user.publicKey!),
-                roomId: action.payload.roomId,
-            }
-
-        const socket = SocketConnection.getInstance().getSocket();
-
-
-            socket.emit("message", userEncryptedMessage);
-            state.messages = [...state.messages, action.payload.message];
-            console.log("Message sent", userEncryptedMessage)
-        }
-        
+      if (state.roomId) {
+        socket.emit("leaveRoom", state.roomId);
+      }
+      state = initialState as any;
     },
-    extraReducers: (builder) => {
-        builder.addCase(joinRoom.pending, (state) => {
-            state.loading = true;
-            console.log("Loading...")
-        });
-        builder.addCase(joinRoom.rejected, (state, action) => {
-            state.loading = false;
-            console.log("ERROR joining room", action.error)
-        });
-        builder.addCase(joinRoom.fulfilled, (state, action) => {
-            const socket = SocketConnection.getInstance().getSocket();
-            
-            const publicAuthUser : PublicAuthUser = {
-                username: action.payload.authUser.username,
-                publicKey: action.payload.authUser.publicKey,
-            }
-            const handshakeInfo: RoomHandshake = {
-                roomId: action.payload.roomId,
-                user: publicAuthUser,
-            }
-
-            console.log("=========== JOINING ROOM... ===========")
-            socket.emit("joinRoom", handshakeInfo);
-            state.roomId = action.payload.roomId;
-            state.user = action.payload.authUser;
-        })
+    handshakeAcknowledge: (
+      state,
+      action: PayloadAction<{users: User[]; socketId: string}>
+    ) => {
+      console.log(
+        "=========== HANDSHAKE RESPONSE ===========\n",
+        action.payload
+      );
+      state.users = action.payload.users;
+      state.loading = false;
+      state.user!.id = action.payload.socketId;
     },
+    userJoined: (state, action: PayloadAction<User>) => {
+      console.log("=========== USER JOINED ===========\n", action.payload);
+      state.users = [...state.users, action.payload];
+    },
+    userLeft: (state, action: PayloadAction<User>) => {
+      console.log("=========== USER LEFT ===========\n", action.payload);
+      state.users = state.users.filter((user) => user.id !== action.payload.id);
+    },
+    startTyping: (state, action: PayloadAction<string>) => {
+      console.log("=========== START TYPING ===========\n", action.payload);
+      const socket = SocketConnection.getInstance().getSocket();
+      socket.emit("startedTyping", action.payload);
+    },
+    stopTyping: (state, action: PayloadAction<string>) => {
+      console.log("=========== STOP TYPING ===========\n", action.payload);
+      const socket = SocketConnection.getInstance().getSocket();
+
+      socket.emit("stoppedTyping", action.payload);
+    },
+    userStartedTyping: (state, action: PayloadAction<User>) => {
+      console.log(
+        "=========== USER STARTED TYPING ===========\n",
+        action.payload
+      );
+      state.typingUsers = [...state.typingUsers, action.payload];
+    },
+    userStoppedTyping: (state, action: PayloadAction<User>) => {
+      console.log(
+        "=========== USER STOPPED TYPING ===========\n",
+        action.payload
+      );
+      state.typingUsers = state.typingUsers.filter(
+        (user) => user.id !== action.payload.id
+      );
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(joinRoom.pending, (state) => {
+      state.loading = true;
+      console.log("Loading...");
+    });
+    builder.addCase(joinRoom.rejected, (state, action) => {
+      state.loading = false;
+      console.log("ERROR joining room", action.error);
+    });
+    builder.addCase(joinRoom.fulfilled, (state, action) => {
+      const socket = SocketConnection.getInstance().getSocket();
+
+      const publicAuthUser: PublicAuthUser = {
+        username: action.payload.authUser.username,
+        publicKey: action.payload.authUser.publicKey,
+      };
+      const handshakeInfo: RoomHandshake = {
+        roomId: action.payload.roomId,
+        user: publicAuthUser,
+      };
+
+      console.log("=========== JOINING ROOM... ===========");
+      socket.emit("joinRoom", handshakeInfo);
+      state.roomId = action.payload.roomId;
+      state.user = action.payload.authUser;
+    });
+
+    builder.addCase(sendMessage.rejected, (state, action) => {
+      console.log("ERROR sending message", action.error);
+    });
+    builder.addCase(sendMessage.fulfilled, (state, action) => {
+      const socket = SocketConnection.getInstance().getSocket();
+
+      console.log("=========== SENDING MESSAGE ===========\n", action.payload);
+
+      socket.emit("message", action.payload.encryptedMessages);
+
+      state.messages = [...state.messages, action.payload.message];
+    });
+
+    builder.addCase(receivedMessage.rejected, (state, action) => {
+      console.log("ERROR decrypting message", action.error);
+    });
+    builder.addCase(receivedMessage.fulfilled, (state, action) => {
+      state.messages = [...state.messages, action.payload.message];
+    });
+  },
 });
 
 // Action creators are generated for each case reducer function
 export const {
-    leaveRoom,
-    userStartedTyping,
-    sendMessage,
-    receivedMessage,
-    userStoppedTyping,
-    userJoined,
-    userLeft,
-    startTyping,
-    stopTyping,
-    handshakeAcknowledge
+  leaveRoom,
+  userStartedTyping,
+  userStoppedTyping,
+  userJoined,
+  userLeft,
+  startTyping,
+  stopTyping,
+  handshakeAcknowledge,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -10,12 +10,9 @@ import {leaveRoom} from "../redux/toolkit/features/chatSlice";
 
 export const MessagesBox = () => {
   const router = useRouter();
-  const {
-    user: ownUser,
-    messages,
-    roomId,
-    users,
-  } = useSelector((state: RootState) => state.chat);
+  const {user, messages, roomId, users} = useSelector(
+    (state: RootState) => state.chat
+  );
   const dispatch = useAppDispatch();
 
   function disconnect() {
@@ -46,7 +43,7 @@ export const MessagesBox = () => {
       <div id="messages" className="row ">
         <div className="col">
           {messages.map((msg, i) => {
-            if (msg.user.id === ownUser?.id) {
+            if (msg.user.id === user?.id) {
               return <OwnMessageContainer key={i} message={msg} />;
             } else {
               return <MessageContainer key={i} message={msg} user={msg.user} />;

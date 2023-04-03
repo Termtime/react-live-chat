@@ -8,6 +8,7 @@ import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import NextCors from "nextjs-cors";
+import {receivedMessage} from "../../redux/toolkit/features/chatSlice";
 
 interface Room {
   id: string;
@@ -38,12 +39,12 @@ export default async function handler(
   res: NextApiResponseWithSocket
 ) {
   console.log("req.method: ", req.method);
-  await NextCors(req, res, {
-    // Options
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    origin: "*",
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  });
+  // await NextCors(req, res, {
+  //   // Options
+  //   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  //   origin: "*",
+  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  // });
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
@@ -111,9 +112,23 @@ export default async function handler(
           "encryptedMessage:",
           encryptedMessage
         );
-        socket.broadcast
-          .to(encryptedMessage.roomId)
-          .emit("message", encryptedMessage);
+
+        for (const message of encryptedMessage) {
+          console.log("searching socket:", message.recipient.id);
+
+          const recipientSocket = io.sockets.sockets.get(message.recipient.id);
+
+          console.log("recipientSocket:", recipientSocket);
+
+          if (recipientSocket) {
+            console.log(
+              "Sending message to recipient: ",
+              message.recipient.id,
+              message
+            );
+            recipientSocket.emit("message", message);
+          }
+        }
       });
 
       socket.on("startedTyping", (roomId) => {
