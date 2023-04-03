@@ -1,5 +1,5 @@
 import CryptoJS from "crypto-js";
-import { Message, UserEncryptedMessage } from "../types";
+import { Message } from "../types";
 
 export const encryptMessage = (message: Message, SECRET_KEY: string) => {
     const encrypted = CryptoJS.AES.encrypt(JSON.stringify(message), SECRET_KEY);
@@ -26,6 +26,12 @@ export const decryptMessage = (
     throw new Error("Could not decrypt message, integrity check failed.");
 };
 
-export const getPrivateKey = () => {
-    return CryptoJS.lib.WordArray.random(128 / 8).toString();
+export const generateKeys = () => {
+    const privateKey = CryptoJS.lib.WordArray.random(256 / 8).toString();
+    const publicKey = CryptoJS.SHA256(privateKey).toString();
+
+    return {
+        privateKey,
+        publicKey,
+    };
 };

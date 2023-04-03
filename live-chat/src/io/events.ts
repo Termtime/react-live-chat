@@ -1,4 +1,4 @@
-import { User, Message, RoomHandshake, UserEncryptedMessage } from "../types";
+import { User, RoomHandshake, UserEncryptedMessage } from "../types";
 
 export interface ServerToClientEvents {
     userJoined: (user: User) => void;
@@ -6,13 +6,11 @@ export interface ServerToClientEvents {
     message: (userEncryptedMessages: UserEncryptedMessage) => void;
     userStartedTyping: (user: User) => void;
     userStoppedTyping: (user: User) => void;
+    handshakeAcknowledge: (userList: User[], socketId: string) => void;
 }
 
 export interface ClientToServerEvents {
-    joinRoom: (
-        handshake: RoomHandshake,
-        callback: (userList: User[]) => void
-    ) => void;
+    joinRoom: (handshake: RoomHandshake) => void;
     leaveRoom: (roomId: string) => void;
     message: (userEncryptedMessages: UserEncryptedMessage) => void;
     startedTyping: (roomId: string) => void;

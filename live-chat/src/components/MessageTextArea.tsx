@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useCallback, useState } from "react";
-import { useSelector } from "react-redux";
 import { sendMessage, startTyping, stopTyping } from "../redux/toolkit/features/chatSlice";
-import { RootState } from "../redux/toolkit/store";
+import { RootState, useAppSelector, useAppDispatch } from '../redux/toolkit/store';
 import { Message } from "../types";
 import { EmojiButton, EmojiButtonProps } from "./EmojiButton";
 let timeout: NodeJS.Timeout | null = null;
@@ -10,31 +9,32 @@ let timeout: NodeJS.Timeout | null = null;
 export const MessageTextArea = () => {
     const [text, setText] = useState("");
 
-    const { socket, roomId, user: ownUser } = useSelector((state: RootState) => state.chat);
+    const { roomId, user: ownUser } = useAppSelector((state: RootState) => state.chat);
+    const dispatch = useAppDispatch();
 
 
     const onSendMessage = useCallback(
         (e?: React.FormEvent) => {
             if (e) e.preventDefault();
-            if (text.trim().length !== 0 && socket && ownUser && roomId){
+            if (text.trim().length !== 0 && ownUser && roomId){
 
                 const message : Message = {
                     body: text,
                     user: {
-                        id: ownUser?.id,
+                        id: ownUser.id!,
                         username: ownUser?.username,
                     },
                     time: new Date().toLocaleTimeString("en-US"),
                 };
                 setText("");
                 stopTyping(roomId);
-                sendMessage({message, roomId});
+                dispatch(sendMessage({message, roomId}));
             }else{
                 throw new Error("Cannot send message. Check your connection and make sure you are authenticated.");
             }
             
         },
-        [text, socket, ownUser, roomId]
+        [text, ownUser, roomId, dispatch]
     );
 
     const handleChange = useCallback(

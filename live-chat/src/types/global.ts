@@ -4,10 +4,16 @@ export interface User {
     publicKey?: string;
 }
 
+export interface PublicAuthUser {
+    username: string;
+    publicKey: string;
+}
+
 export interface AuthUser {
     username: string;
-    id: string;
-    privateKey: string | null;
+    id?: string;
+    privateKey: string;
+    publicKey: string;
 }
 
 export interface Message {
@@ -26,6 +32,6 @@ export interface UserEncryptedMessage {
 }
 
 export interface RoomHandshake {
-    user: User;
+    user: PublicAuthUser;
     roomId: string;
 }

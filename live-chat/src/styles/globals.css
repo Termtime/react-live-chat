@@ -83,7 +83,7 @@ html, .App{
 }
 .messageBox-container{
   border-top-left-radius: 1em;
-  background-image: linear-gradient( rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65) ),  url("/public/resources/img/chat-wallpaper.jpg");
+  background-image: linear-gradient( rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65) ),  url("../../public/resources/img/chat-wallpaper.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   display:flex;
