@@ -1,21 +1,28 @@
+import {CipherKey} from "crypto";
 import {Message} from "../types";
 
+/**
+ * Encrypts a CypherKey using the public key of the recipient
+ */
+export const encryptKey = async (key: CipherKey, publicKey: CipherKey) => {};
 export const encryptMessage = async (
   messageObj: Message,
   RECIPIENT_PUBLIC_KEY: string,
   SYMETRIC_KEY: string
 ) => {
-  const keyBuffer = Buffer.from(RECIPIENT_PUBLIC_KEY, "base64");
-  const publicKeyObj = await crypto.subtle.importKey(
+  // Convert/Import the public key from string to a CryptoKey
+  const publicKeyBuffer = Buffer.from(RECIPIENT_PUBLIC_KEY, "base64");
+  const publicCryptoKey = await crypto.subtle.importKey(
     "spki",
-    keyBuffer,
+    publicKeyBuffer,
     {name: "RSA-OAEP", hash: "SHA-256"},
     true,
     ["encrypt"]
   );
 
+  // Convert/Import the symetric key from string to a CryptoKey
   const symetricKeyBuffer = Buffer.from(SYMETRIC_KEY, "base64");
-  const symetricKeyObj = await crypto.subtle.importKey(
+  const symetricCryptoKey = await crypto.subtle.importKey(
     "raw",
     symetricKeyBuffer,
     {name: "AES-GCM"},
@@ -23,30 +30,31 @@ export const encryptMessage = async (
     ["encrypt"]
   );
 
+  // Convert the message object to a string and then to a Buffer
   const messageString = JSON.stringify(messageObj);
   const messageBuffer = new TextEncoder().encode(messageString);
+
+  // Encrypt the message using the Symetric CryptoKey and convert it to a string (base64)
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  // encrypt using the symetric key
   const encryptedData = await crypto.subtle.encrypt(
     {name: "AES-GCM", iv, tagLength: 128},
-    symetricKeyObj,
+    symetricCryptoKey,
     messageBuffer
   );
+  const encryptedMessageString = Buffer.from(encryptedData).toString("base64");
 
-  // encrypt the symetric key using the public key
+  // Encrypt the Symetric CryptoKey using the recipient's CryptoKey,
+  // then convert it to a string (base64) to include it in the message
   const encryptedSymetricKey = await crypto.subtle.encrypt(
     {name: "RSA-OAEP"},
-    publicKeyObj,
+    publicCryptoKey,
     symetricKeyBuffer
   );
-
-  const encryptedMessage = Buffer.from(encryptedData).toString("base64");
-
   const encryptedSymetricKeyString =
     Buffer.from(encryptedSymetricKey).toString("base64");
 
   return {
-    encryptedMessage,
+    encryptedMessage: encryptedMessageString,
     encryptedSymetricKeyString,
     initializationVector: iv,
   };
@@ -58,34 +66,29 @@ export const decryptMessage = async (
   INITIALIZATION_VECTOR: Uint8Array,
   PRIVATE_KEY: string
 ): Promise<Message> => {
-  const keyBuffer = Buffer.from(PRIVATE_KEY, "base64");
-
-  const importedPrivateKey = await crypto.subtle.importKey(
+  // Convert/Import the key from string to a CryptoKey
+  const privateKeyBuffer = Buffer.from(PRIVATE_KEY, "base64");
+  const privateCryptoKey = await crypto.subtle.importKey(
     "pkcs8",
-    keyBuffer,
+    privateKeyBuffer,
     {name: "RSA-OAEP", hash: "SHA-256"},
     true,
     ["decrypt"]
   );
 
-  const encryptedSymetricKeyBuffer = Buffer.from(
+  // - Convert the encrypted symetric key from string to a Buffer
+  // - Decrypt the symetric key string using the private CryptoKey
+  // - Convert it to a string (base64) to import it as a CryptoKey
+  const encryptedSymetricKeyStringBuffer = Buffer.from(
     ENCRYPTED_SYMETRIC_KEY,
     "base64"
   );
-
-  // decrypt the symetric key using the private key
-  const decryptedSymetricKey = await crypto.subtle.decrypt(
+  const symetricKeyBuffer = await crypto.subtle.decrypt(
     {name: "RSA-OAEP"},
-    importedPrivateKey,
-    encryptedSymetricKeyBuffer
+    privateCryptoKey,
+    encryptedSymetricKeyStringBuffer
   );
-
-  // Get the cryptokey by importing the decrypted symetric key
-  const decryptedSymetricKeyString =
-    Buffer.from(decryptedSymetricKey).toString("base64");
-
-  const symetricKeyBuffer = Buffer.from(decryptedSymetricKeyString, "base64");
-  const symetricKeyObj = await crypto.subtle.importKey(
+  const symetricCryptoKey = await crypto.subtle.importKey(
     "raw",
     symetricKeyBuffer,
     {name: "AES-GCM"},
@@ -93,7 +96,8 @@ export const decryptMessage = async (
     ["decrypt"]
   );
 
-  // Decrypt the message using the imported symetric key
+  // Decrypt the message using the imported Symetric CryptoKey
+  // parse back into a JSON string, then convert it to a Message object
   const ciphertextBuffer = Buffer.from(ciphertext, "base64");
   const decryptedData = await window.crypto.subtle.decrypt(
     {
@@ -101,12 +105,10 @@ export const decryptMessage = async (
       iv: INITIALIZATION_VECTOR,
       tagLength: 128, // Length of the authentication tag
     },
-    symetricKeyObj,
+    symetricCryptoKey,
     ciphertextBuffer
   );
-
   const decryptedString = new TextDecoder().decode(decryptedData);
-
   const decryptedMessage: Message = JSON.parse(decryptedString);
 
   if (decryptedMessage.body && decryptedMessage.time && decryptedMessage.user) {
