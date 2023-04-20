@@ -38,15 +38,14 @@ interface JoinRoomPayload {
 export const joinRoom = createAsyncThunk(
   "chat/joinRoom",
   async ({username, roomId}: JoinRoomPayload, thunkAPI) => {
-    const {privateKey, publicKey} = await generateKeys();
+    const {privateKey, publicKey, symetricKey} = await generateKeys();
 
     const authUser: AuthUser = {
       username,
       privateKey,
       publicKey,
+      symetricKey,
     };
-
-    console.log(authUser);
 
     return {authUser, roomId};
   }
@@ -57,26 +56,32 @@ export const sendMessage = createAsyncThunk(
   async (payload: {message: Message; roomId: string}, thunkAPI) => {
     console.log("=========== SEND MESSAGE ===========\n", payload);
     const state = thunkAPI.getState() as RootState;
-    const {user} = state.chat;
+    const {user: authUser} = state.chat;
     const {message, roomId} = payload;
 
-    console.log("user", user);
+    console.log("user", authUser);
 
-    if (!user || !roomId) {
+    if (!authUser || !roomId) {
       throw new Error("User or Room ID not set");
     }
 
     const encryptedMessages = [] as UserEncryptedMessage[];
 
-    const channelMembers = state.chat.users.filter((u) => u.id !== user.id);
+    const channelMembers = state.chat.users.filter((u) => u.id !== authUser.id);
 
     for (const user of channelMembers) {
       if (user.publicKey) {
-        const encryptedMessage = await encryptMessage(message, user.publicKey);
+        const {
+          encryptedMessage,
+          encryptedSymetricKeyString,
+          initializationVector,
+        } = await encryptMessage(message, user.publicKey, authUser.symetricKey);
         const userEncryptedMessage: UserEncryptedMessage = {
           message: encryptedMessage,
           recipient: user,
           roomId,
+          key: encryptedSymetricKeyString,
+          iv: initializationVector,
         };
 
         encryptedMessages.push(userEncryptedMessage);
@@ -94,15 +99,17 @@ export const receivedMessage = createAsyncThunk(
   async (message: UserEncryptedMessage, thunkAPI) => {
     console.log("=========== RECEIVED MESSAGE ===========\n", message);
     const state = thunkAPI.getState() as RootState;
-    const {user} = state.chat;
+    const {user: authUser} = state.chat;
 
-    if (!user) {
+    if (!authUser) {
       throw new Error("User not set");
     }
 
     const decryptedMessage = await decryptMessage(
       message.message,
-      user.privateKey
+      message.key,
+      message.iv,
+      authUser.privateKey
     );
 
     return {message: decryptedMessage, roomId: message.roomId};

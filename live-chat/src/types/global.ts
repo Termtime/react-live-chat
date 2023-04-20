@@ -14,6 +14,7 @@ export interface AuthUser {
   id?: string;
   privateKey: string;
   publicKey: string;
+  symetricKey: string;
 }
 
 export interface Message {
@@ -27,8 +28,24 @@ export interface UserEncryptedMessage {
    * Encrypted Message in string form
    */
   message: string;
+  /**
+   * Key used to encrypt the message, encrypted with the recipient's public key
+   */
+  key: string;
+  /**
+   *
+   */
   recipient: User;
+  /**
+   * Room ID
+   */
   roomId: string;
+
+  /**
+   * Initialization Vector
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt
+   */
+  iv: Uint8Array;
 }
 
 export interface RoomHandshake {

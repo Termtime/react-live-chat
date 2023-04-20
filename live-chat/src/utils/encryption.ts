@@ -2,8 +2,9 @@ import {Message} from "../types";
 
 export const encryptMessage = async (
   messageObj: Message,
-  RECIPIENT_PUBLIC_KEY: string
-): Promise<string> => {
+  RECIPIENT_PUBLIC_KEY: string,
+  SYMETRIC_KEY: string
+) => {
   const keyBuffer = Buffer.from(RECIPIENT_PUBLIC_KEY, "base64");
   const publicKeyObj = await crypto.subtle.importKey(
     "spki",
@@ -13,22 +14,51 @@ export const encryptMessage = async (
     ["encrypt"]
   );
 
+  const symetricKeyBuffer = Buffer.from(SYMETRIC_KEY, "base64");
+  const symetricKeyObj = await crypto.subtle.importKey(
+    "raw",
+    symetricKeyBuffer,
+    {name: "AES-GCM"},
+    true,
+    ["encrypt"]
+  );
+
   const messageString = JSON.stringify(messageObj);
   const messageBuffer = new TextEncoder().encode(messageString);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  // encrypt using the symetric key
   const encryptedData = await crypto.subtle.encrypt(
-    {name: "RSA-OAEP"},
-    publicKeyObj,
+    {name: "AES-GCM", iv, tagLength: 128},
+    symetricKeyObj,
     messageBuffer
   );
 
-  return Buffer.from(encryptedData).toString("base64");
+  // encrypt the symetric key using the public key
+  const encryptedSymetricKey = await crypto.subtle.encrypt(
+    {name: "RSA-OAEP"},
+    publicKeyObj,
+    symetricKeyBuffer
+  );
+
+  const encryptedMessage = Buffer.from(encryptedData).toString("base64");
+
+  const encryptedSymetricKeyString =
+    Buffer.from(encryptedSymetricKey).toString("base64");
+
+  return {
+    encryptedMessage,
+    encryptedSymetricKeyString,
+    initializationVector: iv,
+  };
 };
 
 export const decryptMessage = async (
   ciphertext: string,
-  SECRET_KEY: string
+  ENCRYPTED_SYMETRIC_KEY: string,
+  INITIALIZATION_VECTOR: Uint8Array,
+  PRIVATE_KEY: string
 ): Promise<Message> => {
-  const keyBuffer = Buffer.from(SECRET_KEY, "base64");
+  const keyBuffer = Buffer.from(PRIVATE_KEY, "base64");
 
   const importedPrivateKey = await crypto.subtle.importKey(
     "pkcs8",
@@ -38,11 +68,40 @@ export const decryptMessage = async (
     ["decrypt"]
   );
 
-  const ciphertextBuffer = Buffer.from(ciphertext, "base64");
+  const encryptedSymetricKeyBuffer = Buffer.from(
+    ENCRYPTED_SYMETRIC_KEY,
+    "base64"
+  );
 
-  const decryptedData = await crypto.subtle.decrypt(
+  // decrypt the symetric key using the private key
+  const decryptedSymetricKey = await crypto.subtle.decrypt(
     {name: "RSA-OAEP"},
     importedPrivateKey,
+    encryptedSymetricKeyBuffer
+  );
+
+  // Get the cryptokey by importing the decrypted symetric key
+  const decryptedSymetricKeyString =
+    Buffer.from(decryptedSymetricKey).toString("base64");
+
+  const symetricKeyBuffer = Buffer.from(decryptedSymetricKeyString, "base64");
+  const symetricKeyObj = await crypto.subtle.importKey(
+    "raw",
+    symetricKeyBuffer,
+    {name: "AES-GCM"},
+    true,
+    ["decrypt"]
+  );
+
+  // Decrypt the message using the imported symetric key
+  const ciphertextBuffer = Buffer.from(ciphertext, "base64");
+  const decryptedData = await window.crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: INITIALIZATION_VECTOR,
+      tagLength: 128, // Length of the authentication tag
+    },
+    symetricKeyObj,
     ciphertextBuffer
   );
 
@@ -73,12 +132,25 @@ export const generateKeys = async () => {
     keyUsages
   );
 
+  const symetricKey = await crypto.subtle.generateKey(
+    {name: "AES-GCM", length: 256},
+    true,
+    ["encrypt", "decrypt"]
+  );
+
   const privateKeyData = await crypto.subtle.exportKey("pkcs8", privateKey);
 
   const publicKeyData = await crypto.subtle.exportKey("spki", publicKey);
 
+  const symetricKeyData = await crypto.subtle.exportKey("raw", symetricKey);
+
   const privateKeyString = Buffer.from(privateKeyData).toString("base64");
   const publicKeyString = Buffer.from(publicKeyData).toString("base64");
+  const symetricKeyString = Buffer.from(symetricKeyData).toString("base64");
 
-  return {privateKey: privateKeyString, publicKey: publicKeyString};
+  return {
+    privateKey: privateKeyString,
+    publicKey: publicKeyString,
+    symetricKey: symetricKeyString,
+  };
 };
