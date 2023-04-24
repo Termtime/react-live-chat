@@ -15,10 +15,10 @@ export const MessagesBox = () => {
   );
   const dispatch = useAppDispatch();
 
-  function disconnect() {
-    router.push("/");
+  const disconnect = async () => {
+    await router.push("/");
     dispatch(leaveRoom());
-  }
+  };
 
   return (
     <div className="col messageBox-container">
@@ -46,7 +46,7 @@ export const MessagesBox = () => {
             if (msg.user.id === user?.id) {
               return <OwnMessageContainer key={i} message={msg} />;
             } else {
-              return <MessageContainer key={i} message={msg} user={msg.user} />;
+              return <MessageContainer key={i} message={msg} />;
             }
           })}
         </div>

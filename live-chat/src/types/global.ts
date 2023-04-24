@@ -2,11 +2,13 @@ export interface User {
   username: string;
   id: string;
   publicKey?: string;
+  color?: string;
 }
 
 export interface PublicAuthUser {
   username: string;
   publicKey: string;
+  color?: string;
 }
 
 export interface AuthUser {
@@ -15,6 +17,7 @@ export interface AuthUser {
   privateKey: string;
   publicKey: string;
   symetricKey: string;
+  color?: string;
 }
 
 export interface Message {

@@ -34,17 +34,41 @@ interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO;
 }
 
+const generateLinkedColor = (username: string) => {
+  const colors = [
+    "#E91E63",
+    "#9C27B0",
+    "#673AB7",
+    "#3F51B5",
+    "#2196F3",
+    "#03A9F4",
+    "#00BCD4",
+    "#009688",
+    "#4CAF50",
+    "#8BC34A",
+    "#CDDC39",
+    "#FFEB3B",
+    "#FFC107",
+    "#FF9800",
+    "#FF5722",
+    "#795548",
+    "#9E9E9E",
+    "#607D8B",
+  ];
+
+  const sum = username
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const index = sum % colors.length;
+
+  return colors[index];
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
   console.log("req.method: ", req.method);
-  // await NextCors(req, res, {
-  //   // Options
-  //   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-  //   origin: "*",
-  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  // });
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
@@ -65,6 +89,7 @@ export default async function handler(
           id: socket.id,
           username: userInfo.username,
           publicKey: userInfo.publicKey,
+          color: userInfo.color || generateLinkedColor(userInfo.username),
         };
 
         console.log("=========== JOIN ROOM ===========\n", {

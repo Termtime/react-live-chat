@@ -27,7 +27,7 @@ const initialState: ChatState = {
   messages: [],
   roomId: null,
   typingUsers: [],
-  loading: true,
+  loading: false,
 };
 
 interface JoinRoomPayload {
@@ -127,7 +127,14 @@ export const chatSlice = createSlice({
       if (state.roomId) {
         socket.emit("leaveRoom", state.roomId);
       }
-      state = initialState as any;
+      console.log("Setting state");
+
+      state.loading = state.loading;
+      state.user = initialState.user;
+      state.users = initialState.users;
+      state.messages = initialState.messages;
+      state.roomId = initialState.roomId;
+      state.typingUsers = initialState.typingUsers;
     },
     handshakeAcknowledge: (
       state,
@@ -140,6 +147,14 @@ export const chatSlice = createSlice({
       state.users = action.payload.users;
       state.loading = false;
       state.user!.id = action.payload.socketId;
+      state.user!.color = action.payload.users.find(
+        (u) => u.id === action.payload.socketId
+      )?.color;
+
+      console.log(
+        "state",
+        action.payload.users.find((u) => u.id === action.payload.socketId)
+      );
     },
     userJoined: (state, action: PayloadAction<User>) => {
       console.log("=========== USER JOINED ===========\n", action.payload);
