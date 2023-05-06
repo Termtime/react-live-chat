@@ -1,56 +1,48 @@
-import React from "react";
-import {useRouter} from "next/router";
-import {MessageContainer} from "./MessageContainer";
-import {OwnMessageContainer} from "./OwnMessageContainer";
-import exit from "@/../public/resources/img/exit.svg";
-import Image from "next/image";
-import {useSelector} from "react-redux";
-import {RootState, useAppDispatch} from "../redux/toolkit/store";
-import {leaveRoom} from "../redux/toolkit/features/chatSlice";
+import {Flex} from "@chakra-ui/react";
+import {css} from "@emotion/react";
+import {useAppSelector} from "../redux/toolkit/store";
+import {TextMessage} from "./TextMessage";
 
 export const MessagesBox = () => {
-  const router = useRouter();
-  const {user, messages, roomId, users} = useSelector(
-    (state: RootState) => state.chat
-  );
-  const dispatch = useAppDispatch();
+  const {messages} = useAppSelector((state) => state.chat);
 
-  const disconnect = async () => {
-    await router.push("/");
-    dispatch(leaveRoom());
-  };
+  const messagesBoxStyles = css`
+    background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+      url("/resources/img/chat-wallpaper.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 80vh;
+    padding: 10px;
+    border-bottom-right-radius: 1em;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      box-shadow: 0px 0px 10px 10px transparent;
+      border: solid 1px transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      box-shadow: inset 0 0 20px 10px rgb(71, 65, 65);
+      border-radius: 1em;
+      border: solid 1px transparent;
+    }
+  `;
 
   return (
-    <div className="col messageBox-container">
-      <div className="row messageBox-container-header">
-        <div className="col">
-          <p>Room: {roomId} </p>
-        </div>
-        <div className="col text-right">
-          <div className="row right text-right">
-            <p style={{lineHeight: "3vh"}}>
-              {users.length} {`${users.length === 1 ? "user" : "users"}`} online
-            </p>
-            <Image
-              alt="exit-button"
-              id="exit-btn"
-              src={exit}
-              onClick={disconnect}
-            />
-          </div>
-        </div>
-      </div>
-      <div id="messages" className="row ">
-        <div className="col">
-          {messages.map((msg, i) => {
-            if (msg.user.id === user?.id) {
-              return <OwnMessageContainer key={i} message={msg} />;
-            } else {
-              return <MessageContainer key={i} message={msg} />;
-            }
-          })}
-        </div>
-      </div>
-    </div>
+    <Flex css={messagesBoxStyles}>
+      {messages.map((message) => (
+        <TextMessage
+          key={`${message.user.id}-${message.time}`}
+          message={message}
+        />
+      ))}
+    </Flex>
   );
 };

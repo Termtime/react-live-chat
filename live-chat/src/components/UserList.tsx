@@ -1,23 +1,51 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/toolkit/store";
-import { UserItem } from "./UserItem";
+import {Flex, Text} from "@chakra-ui/react";
+import {css} from "@emotion/react";
+import {useAppSelector} from "../redux/toolkit/store";
+import PersonIcon from "@mui/icons-material/Person";
 
 export const UserList = () => {
-    const { users } = useSelector((state: RootState) => state.chat);
+  const {users, user: ownUser} = useAppSelector((state) => state.chat);
+  const userListStyles = css`
+    background-color: #752c2c;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    border-bottom-left-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    overflow-y: auto;
+    width: 23.5rem;
+    &::-webkit-scrollbar {
+      width: 0.5rem;
+    }
+    &::-webkit-scrollbar-track {
+      background: #752c2c;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #b33b3b;
+    }
+  `;
+  const userStyles = css`
+    display: flex;
+    margin-bottom: 0.5rem;
+    word-break: break-all;
+  `;
 
-    return (
-        <div className="userList-container">
-            <div className="userList">
-                <div id="userlist-title" className="row center">
-                    <p>Users</p>
-                </div>
-                <div id="users">
-                    {users.map((user, index) => (
-                        <UserItem key={index} user={user} />
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <Flex css={userListStyles}>
+      <Text>
+        {`${users.length === 1 ? "User" : "Users"}`} online: {users.length}
+      </Text>
+      <Flex direction="column" alignItems="flex-start" width="100%">
+        {users.map((user) => (
+          <Flex key={user.id} css={userStyles}>
+            <PersonIcon />
+            <Text margin={0}>
+              {user.username} {user.id === ownUser?.id && "(You)"}
+            </Text>
+          </Flex>
+        ))}
+      </Flex>
+    </Flex>
+  );
 };

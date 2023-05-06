@@ -119,20 +119,6 @@ html,
   border: solid 1px transparent;
 }
 
-.ownMessage {
-  align-self: flex-end;
-  display: flex;
-  padding: 10px 10px 0px 10px;
-  /* background-color: rgb(49, 40, 126); */
-  /* background-color: 	#127067; */
-  border-radius: 10px;
-  width: auto;
-  max-width: 20vw;
-  min-width: 6vw;
-  margin-bottom: 5px;
-  box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.3);
-}
-
 .message {
   display: flex;
   align-self: flex-start;

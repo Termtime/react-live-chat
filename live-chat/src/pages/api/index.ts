@@ -7,7 +7,7 @@ import type {Server as IOServer} from "socket.io";
 import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
-import NextCors from "nextjs-cors";
+// import NextCors from "nextjs-cors";
 import {receivedMessage} from "../../redux/toolkit/features/chatSlice";
 
 interface Room {

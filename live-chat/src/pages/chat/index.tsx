@@ -1,24 +1,9 @@
-import React, {useCallback, useEffect, useRef} from "react";
-import {MessagesBox, MessageTextArea, UserList} from "@/components";
+import React, {useEffect} from "react";
+import {MessagesBox, MessageTextArea, UserList, ChatHeader} from "@/components";
 import {useRouter} from "next/router";
-import {User} from "../../types";
-import {
-  useAppDispatch,
-  useAppSelector,
-  getAppDispatch,
-} from "../../redux/toolkit/store";
-import {UserEncryptedMessage} from "../../types/global";
-import {
-  userStartedTyping,
-  leaveRoom,
-  userStoppedTyping,
-  userLeft,
-  userJoined,
-  receivedMessage,
-  handshakeAcknowledge,
-} from "../../redux/toolkit/features/chatSlice";
-import {SocketConnection} from "../../io/connection";
-import {AppDispatch} from "../../redux/toolkit/store";
+import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
+import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
+import {Flex} from "@chakra-ui/react";
 
 const ChatPage = () => {
   const router = useRouter();
@@ -41,13 +26,6 @@ const ChatPage = () => {
       await router.push("/");
       dispatch(leaveRoom());
     };
-    console.log(
-      "useEffect called",
-      roomId,
-      ownUser,
-      loading,
-      (!roomId || !ownUser) && !loading
-    );
     if ((!roomId || !ownUser) && !loading) {
       console.log("roomId or username is not set");
       alert("roomId or username is not set");
@@ -78,11 +56,12 @@ const ChatPage = () => {
 
   return (
     <div className="flex-container col App ">
-      <div id="app">
-        <div className="row">
-          <MessagesBox />
+      <Flex direction="column" id="app">
+        <ChatHeader />
+        <Flex>
           <UserList />
-        </div>
+          <MessagesBox />
+        </Flex>
 
         <div id="typingStatus">
           <small key="users-typing" className="text-white">
@@ -90,7 +69,7 @@ const ChatPage = () => {
           </small>
         </div>
         <MessageTextArea />
-      </div>
+      </Flex>
     </div>
   );
 };
