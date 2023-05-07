@@ -1,37 +1,36 @@
-import React, { useState } from "react";
-import Picker, { EmojiClickData } from "emoji-picker-react";
+import React, {useState} from "react";
+import Picker, {EmojiClickData, EmojiStyle} from "emoji-picker-react";
+import {Button, Flex} from "@chakra-ui/react";
+import {css} from "@emotion/react";
 
 export interface EmojiButtonProps {
-    onClick?: (emoji: EmojiClickData, event: MouseEvent) => void;
+  onClick?: (emoji: EmojiClickData, event: MouseEvent) => void;
 }
 
-export const EmojiButton = ({ onClick }: EmojiButtonProps) => {
-    const [isActive, setIsActive] = useState(false);
-    return (
-        <div className="mr-1">
-            {isActive ? (
-                <div className="col">
-                    <div className="row emojiPicker">
-                        <Picker onEmojiClick={onClick} />
-                    </div>
-                    <div className="row justify-content-end">
-                        <button
-                            id="emojiBtn"
-                            className="btn btn-success"
-                            onClick={(e) => setIsActive(!isActive)}
-                        >
-                            😀
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <button
-                    className="btn btn-secondary"
-                    onClick={(e) => setIsActive(!isActive)}
-                >
-                    😀
-                </button>
-            )}
-        </div>
-    );
+export const EmojiButton = ({onClick}: EmojiButtonProps) => {
+  const [isActive, setIsActive] = useState(false);
+  const emojiPickerStyles = css`
+    position: absolute;
+    bottom: 5rem;
+    left: 1.5rem;
+  `;
+  return (
+    <Flex direction="column">
+      {isActive && (
+        <Flex css={emojiPickerStyles}>
+          <Picker onEmojiClick={onClick} emojiStyle={EmojiStyle.NATIVE} />
+        </Flex>
+      )}
+      <Flex direction="row">
+        <Button
+          colorScheme="gray"
+          variant="ghost"
+          onClick={(e) => setIsActive(!isActive)}
+          isActive={isActive}
+        >
+          😀
+        </Button>
+      </Flex>
+    </Flex>
+  );
 };

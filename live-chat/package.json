@@ -25,6 +25,7 @@
     "eslint-config-next": "13.2.4",
     "framer-motion": "^10.12.7",
     "jquery": "^3.6.4",
+    "lodash.debounce": "^4.0.8",
     "next": "13.2.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.6",
-    "@types/color": "^3.0.3"
+    "@types/color": "^3.0.3",
+    "@types/lodash.debounce": "^4.0.7"
   }
 }

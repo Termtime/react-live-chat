@@ -6,7 +6,7 @@ import {useAppSelector, useAppDispatch} from "../redux/toolkit/store";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export const ChatHeader = () => {
-  const {roomId, users} = useAppSelector((state) => state.chat);
+  const {roomId} = useAppSelector((state) => state.chat);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -22,6 +22,7 @@ export const ChatHeader = () => {
     padding: 1rem;
     color: white;
     box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
+    align-items: center;
   `;
 
   const titleStyles = css`
@@ -29,18 +30,27 @@ export const ChatHeader = () => {
     margin: 0;
   `;
 
-  const titleWrapperStyles = css``;
+  const titleWrapperStyles = css`
+    align-items: center;
+    flex: 1;
+  `;
+
+  const arrowButtonStyles = css`
+    cursor: pointer;
+    flex-direction: column;
+    border-radius: 50%;
+    padding: 0.5rem;
+    transition: background-color 0.2s ease-in-out;
+    &:hover {
+      background-color: #b33b3b;
+    }
+  `;
 
   return (
     <Flex css={headerStyles}>
-      <Flex direction="column" onClick={disconnect} marginRight={10}>
+      <Flex css={arrowButtonStyles} onClick={disconnect} marginRight={10}>
         <ArrowBackIcon />
       </Flex>
-      {/* <Flex>
-          <Text css={textStyles}>
-            {users.length} {`${users.length === 1 ? "user" : "users"}`} online
-          </Text>
-        </Flex> */}
       <Flex direction="column" css={titleWrapperStyles}>
         <Text css={titleStyles}>Room: {roomId}</Text>
       </Flex>

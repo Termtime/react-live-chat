@@ -1,4 +1,6 @@
-import React, {ChangeEvent, useCallback, useState} from "react";
+import {Button, Flex, Textarea} from "@chakra-ui/react";
+import {css} from "@emotion/react";
+import React, {ChangeEvent, useCallback, useMemo, useState} from "react";
 import {
   sendMessage,
   startTyping,
@@ -11,7 +13,8 @@ import {
 } from "../redux/toolkit/store";
 import {Message} from "../types";
 import {EmojiButton, EmojiButtonProps} from "./EmojiButton";
-let timeout: NodeJS.Timeout | null = null;
+import SendIcon from "@mui/icons-material/Send";
+import debounce from "lodash.debounce";
 
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
@@ -20,6 +23,19 @@ export const MessageTextArea = () => {
     (state: RootState) => state.chat
   );
   const dispatch = useAppDispatch();
+
+  const stopTypingDebounced = useMemo(
+    () => debounce(() => dispatch(stopTyping(roomId!)), 3000),
+    [dispatch, roomId]
+  );
+  const startTypingDebounced = useMemo(
+    () =>
+      debounce(() => dispatch(startTyping(roomId!)), 3000, {
+        leading: true,
+        trailing: false,
+      }),
+    [dispatch, roomId]
+  );
 
   const onSendMessage = useCallback(
     (e?: React.FormEvent) => {
@@ -35,7 +51,7 @@ export const MessageTextArea = () => {
           time: new Date().toLocaleTimeString("en-US"),
         };
         setText("");
-        stopTyping(roomId);
+        stopTypingDebounced.flush();
         dispatch(sendMessage({message, roomId}));
       } else {
         throw new Error(
@@ -43,28 +59,23 @@ export const MessageTextArea = () => {
         );
       }
     },
-    [text, ownUser, roomId, dispatch]
+    [text, ownUser, roomId, stopTypingDebounced, dispatch]
   );
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
       if (roomId) {
-        if (timeout) {
-          clearTimeout(timeout);
-        } else {
-          startTyping(roomId);
-        }
-        timeout = setTimeout(() => stopTyping(roomId), 3000);
-        setText(e.target.value);
+        startTypingDebounced();
+        stopTypingDebounced();
       }
+      setText(e.target.value);
     },
-    [roomId]
+    [roomId, startTypingDebounced, stopTypingDebounced]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.keyCode === 13 && !e.shiftKey) {
-        if (timeout) clearTimeout(timeout);
         onSendMessage();
         if (e) e.preventDefault();
       }
@@ -81,25 +92,35 @@ export const MessageTextArea = () => {
     [text, handleChange]
   );
 
+  const textAreaStyles = css`
+    flex-grow: 1;
+    box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.75);
+    background-color: rgba(0, 0, 0, 0.65);
+    color: white;
+    resize: none;
+    max-height: 120px;
+    border: 0;
+  `;
+
+  const formContainerStyles = css`
+    flex: 1;
+  `;
   return (
-    <form
-      style={{alignItems: "flex-end"}}
-      className="row form-inline"
-      onSubmit={onSendMessage}
-    >
-      <textarea
-        id="msgInput"
-        rows={1}
-        className="form-control mr-0"
-        value={text}
-        onInput={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder="Write something..."
-      />
-      <EmojiButton onClick={onEmojiSelected} />
-      <button type="submit" className="btn btn-primary">
-        Send
-      </button>
+    <form onSubmit={onSendMessage}>
+      <Flex css={formContainerStyles}>
+        <EmojiButton onClick={onEmojiSelected} />
+        <Textarea
+          css={textAreaStyles}
+          rows={1}
+          value={text}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Write something..."
+        />
+        <Button type="submit" colorScheme="blue">
+          <SendIcon />
+        </Button>
+      </Flex>
     </form>
   );
 };

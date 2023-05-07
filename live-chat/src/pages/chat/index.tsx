@@ -1,9 +1,10 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import {MessagesBox, MessageTextArea, UserList, ChatHeader} from "@/components";
 import {useRouter} from "next/router";
 import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
 import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
 import {Flex} from "@chakra-ui/react";
+import {css} from "@emotion/react";
 
 const ChatPage = () => {
   const router = useRouter();
@@ -14,13 +15,7 @@ const ChatPage = () => {
     loading,
   } = useAppSelector((state) => state.chat);
 
-  // Use a ref to store the dispatch function so that it doesn't change between renders
-  // and we can use it in the socket event handlers without triggering a re-render
-  // and removes the need to include dispatch in the useEffect dependency array
-  // const dispatch = useAppDispatch();
-
   useEffect(() => {
-    //if roomId or username is not set, then return to homepage and clear redux state
     const disconnect = async () => {
       const dispatch = getAppDispatch();
       await router.push("/");
@@ -33,7 +28,7 @@ const ChatPage = () => {
     }
   }, [loading, ownUser, roomId, router]);
 
-  const renderTypingUsers = () => {
+  const renderTypingUsers = useMemo(() => {
     let string: string | React.ReactElement = "";
     if (typingUsers.length === 1) {
       string = typingUsers.map((user) => user.username) + " is typing...";
@@ -52,25 +47,32 @@ const ChatPage = () => {
       string = <div>&nbsp;</div>;
     }
     return string;
-  };
+  }, [typingUsers]);
+
+  const chatAppStyles = css`
+    display: flex;
+    background-color: #1c2224;
+    flex-direction: column;
+    margin: 20px 0px;
+    padding: 20px;
+    flex: 1;
+  `;
 
   return (
-    <div className="flex-container col App ">
-      <Flex direction="column" id="app">
-        <ChatHeader />
-        <Flex>
-          <UserList />
-          <MessagesBox />
-        </Flex>
-
-        <div id="typingStatus">
-          <small key="users-typing" className="text-white">
-            {renderTypingUsers()}
-          </small>
-        </div>
-        <MessageTextArea />
+    <Flex css={chatAppStyles}>
+      <ChatHeader />
+      <Flex>
+        <UserList />
+        <MessagesBox />
       </Flex>
-    </div>
+
+      <Flex id="typingStatus">
+        <small key="users-typing" className="text-white">
+          {renderTypingUsers}
+        </small>
+      </Flex>
+      <MessageTextArea />
+    </Flex>
   );
 };
 

@@ -14,7 +14,7 @@ export const UserList = () => {
     padding: 1rem;
     display: flex;
     overflow-y: auto;
-    width: 23.5rem;
+    width: 15rem;
     &::-webkit-scrollbar {
       width: 0.5rem;
     }
