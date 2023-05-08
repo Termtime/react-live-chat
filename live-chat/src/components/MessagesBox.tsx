@@ -14,7 +14,6 @@ export const MessagesBox = () => {
     display: flex;
     flex-direction: column;
     flex: 1;
-    height: 80vh;
     padding: 10px;
     border-bottom-right-radius: 1em;
     overflow-y: auto;

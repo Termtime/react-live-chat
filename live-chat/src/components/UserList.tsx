@@ -24,6 +24,11 @@ export const UserList = () => {
     &::-webkit-scrollbar-thumb {
       background: #b33b3b;
     }
+
+    // Hide the user list when the screen is too small
+    @media (max-width: 768px) {
+      display: none;
+    }
   `;
   const userStyles = css`
     display: flex;

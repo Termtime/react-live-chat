@@ -31,6 +31,19 @@ export const TextMessage = ({message}: {message: Message}) => {
     max-width: 20vw;
     min-width: 6vw;
     box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.3);
+
+    @media (max-width: 768px) {
+      max-width: 50vw;
+    }
+    @media (max-width: 500px) {
+      max-width: 80vw;
+    }
+    @media (max-width: 350px) {
+      max-width: 90vw;
+    }
+    @media (max-width: 300px) {
+      max-width: 95vw;
+    }
   `;
   const ownMessageStyles = css`
     ${messageStyles}

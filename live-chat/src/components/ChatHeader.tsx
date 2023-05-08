@@ -23,6 +23,7 @@ export const ChatHeader = () => {
     color: white;
     box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
     align-items: center;
+    flex: none;
   `;
 
   const titleStyles = css`
@@ -48,7 +49,7 @@ export const ChatHeader = () => {
 
   return (
     <Flex css={headerStyles}>
-      <Flex css={arrowButtonStyles} onClick={disconnect} marginRight={10}>
+      <Flex css={arrowButtonStyles} onClick={disconnect}>
         <ArrowBackIcon />
       </Flex>
       <Flex direction="column" css={titleWrapperStyles}>

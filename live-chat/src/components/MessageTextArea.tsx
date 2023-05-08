@@ -40,7 +40,8 @@ export const MessageTextArea = () => {
   const onSendMessage = useCallback(
     (e?: React.FormEvent) => {
       if (e) e.preventDefault();
-      if (text.trim().length !== 0 && ownUser && roomId) {
+      if (text.trim().length === 0) return;
+      if (ownUser && roomId) {
         const message: Message = {
           body: text,
           user: {

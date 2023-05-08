@@ -3,7 +3,7 @@ import {MessagesBox, MessageTextArea, UserList, ChatHeader} from "@/components";
 import {useRouter} from "next/router";
 import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
 import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
-import {Flex} from "@chakra-ui/react";
+import {Flex, Text} from "@chakra-ui/react";
 import {css} from "@emotion/react";
 
 const ChatPage = () => {
@@ -53,25 +53,21 @@ const ChatPage = () => {
     display: flex;
     background-color: #1c2224;
     flex-direction: column;
-    margin: 20px 0px;
-    padding: 20px;
-    flex: 1;
+    padding: 1rem;
+    height: 100vh;
   `;
 
   return (
     <Flex css={chatAppStyles}>
       <ChatHeader />
-      <Flex>
+      <Flex flex={1} overflowY="auto">
         <UserList />
         <MessagesBox />
       </Flex>
-
-      <Flex id="typingStatus">
-        <small key="users-typing" className="text-white">
-          {renderTypingUsers}
-        </small>
+      <Flex direction="column">
+        <Text color="white">{renderTypingUsers}</Text>
+        <MessageTextArea />
       </Flex>
-      <MessageTextArea />
     </Flex>
   );
 };
