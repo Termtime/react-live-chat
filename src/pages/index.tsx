@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {useRouter} from "next/router";
-import styles from "../styles/HomePage.module.css";
 import {joinRoom} from "../redux/toolkit/features/chatSlice";
 import {useAppDispatch} from "../redux/toolkit/store";
 import {SocketConnection} from "../io/connection";
@@ -11,7 +10,6 @@ import {
   CardBody,
   Flex,
   FormControl,
-  FormLabel,
   Heading,
   Input,
   InputGroup,
@@ -73,7 +71,12 @@ const HomePage = () => {
         <Heading as="h3" size="lg" textAlign="center" css={textStyles}>
           Join chat rooms, and talk to your friends!
         </Heading>
-        <Flex direction="column" alignItems="center" alignSelf="center">
+        <Flex
+          marginTop={10}
+          direction="column"
+          alignItems="center"
+          alignSelf="center"
+        >
           <FormControl isRequired>
             <InputGroup>
               <InputLeftAddon>Username:</InputLeftAddon>
@@ -118,43 +121,42 @@ const HomePage = () => {
         <Box>
           <Card>
             <CardBody>
-              <Heading as="h3" size="lg">
+              <Heading as="h3" size="lg" marginBottom={3}>
                 Totally Anonimous
               </Heading>
               <hr />
               <Text>
-                Offer a free space to chat and talk with friends or random
-                people about common topics or interests.
+                Chat over a secure, anonimous space about common topics or
+                interests. Meet new people and share about life!
               </Text>
             </CardBody>
           </Card>
         </Box>
-
         <Box>
           <Card>
             <CardBody>
-              <Heading as="h3" size="lg">
+              <Heading as="h3" size="lg" marginBottom={3}>
                 End-to-end encryption
               </Heading>
               <hr />
               <Text>
-                Using Express and Socket.io with rooms we can connect people
-                through a simple WebApp.
+                Using NextJS and Socket.io together with end-to-end encryption
+                for messages we can connect people through a simple web
+                application.
               </Text>
             </CardBody>
           </Card>
         </Box>
-
         <Box>
           <Card>
             <CardBody>
-              <Heading as="h3" size="lg">
-                IDK
+              <Heading as="h3" size="lg" marginBottom={3}>
+                Why?
               </Heading>
               <hr />
               <Text>
                 Because there is always a need to explore new and fun ways to
-                use and apply technology in daily life.
+                use and apply technology in our life.
               </Text>
             </CardBody>
           </Card>
