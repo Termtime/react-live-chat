@@ -4,9 +4,12 @@ import {useRouter} from "next/router";
 import {leaveRoom} from "../redux/toolkit/features/chatSlice";
 import {useAppSelector, useAppDispatch} from "../redux/toolkit/store";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import GroupIcon from "@mui/icons-material/Group";
+import {toggleUserList} from "../redux/toolkit/features/uiSlice";
 
 export const ChatHeader = () => {
   const {roomId} = useAppSelector((state) => state.chat);
+  const {isExpanded} = useAppSelector((state) => state.ui.userList);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -47,10 +50,18 @@ export const ChatHeader = () => {
     }
   `;
 
+  const groupIconStyles = css`
+    ${arrowButtonStyles}
+    background-color: ${isExpanded ? "#b33b3b" : "transparent"};
+  `;
+
   return (
     <Flex css={headerStyles}>
       <Flex css={arrowButtonStyles} onClick={disconnect}>
         <ArrowBackIcon />
+      </Flex>
+      <Flex css={groupIconStyles} onClick={() => dispatch(toggleUserList())}>
+        <GroupIcon />
       </Flex>
       <Flex direction="column" css={titleWrapperStyles}>
         <Text css={titleStyles}>Room: {roomId}</Text>

@@ -5,6 +5,8 @@ import PersonIcon from "@mui/icons-material/Person";
 
 export const UserList = () => {
   const {users, user: ownUser} = useAppSelector((state) => state.chat);
+  const {isExpanded} = useAppSelector((state) => state.ui.userList);
+
   const userListStyles = css`
     background-color: #752c2c;
     flex-direction: column;
@@ -24,12 +26,14 @@ export const UserList = () => {
     &::-webkit-scrollbar-thumb {
       background: #b33b3b;
     }
+    display: ${isExpanded ? "flex" : "none"};
 
     // Hide the user list when the screen is too small
-    @media (max-width: 768px) {
-      display: none;
+    @media (max-width: 600px) {
+      width: 100%;
     }
   `;
+
   const userStyles = css`
     display: flex;
     margin-bottom: 0.5rem;
