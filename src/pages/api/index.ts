@@ -7,8 +7,7 @@ import type {Server as IOServer} from "socket.io";
 import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
-// import NextCors from "nextjs-cors";
-import {receivedMessage} from "../../redux/toolkit/features/chatSlice";
+import NextCors from "nextjs-cors";
 
 interface Room {
   id: string;
@@ -68,10 +67,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  console.log("req.method: ", req.method);
+  await NextCors(req, res, {
+    // Options
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    origin: "localhost:3000",
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  });
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
+    res.end();
+    return;
   } else {
     console.log("Socket is initializing");
     res.socket.server.io = new Server(res.socket.server);
