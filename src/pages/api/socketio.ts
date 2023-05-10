@@ -3,6 +3,7 @@ import type {Server as HTTPServer} from "http";
 import type {NextApiRequest, NextApiResponse} from "next";
 import type {Socket as NetSocket} from "net";
 import type {Server as IOServer} from "socket.io";
+import {Server as NetServer} from "http";
 
 import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
@@ -67,12 +68,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  await NextCors(req, res, {
-    // Options
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    origin: "https://react-live-chat-mu.vercel.app/",
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  });
+  // await NextCors(req, res, {
+  //   // Options
+  //   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  //   origin: "https://react-live-chat-mu.vercel.app/",
+  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  // });
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
@@ -80,7 +81,10 @@ export default async function handler(
     return;
   } else {
     console.log("Socket is initializing");
-    res.socket.server.io = new Server(res.socket.server);
+    const httpServer: NetServer = res.socket.server as any;
+    res.socket.server.io = new Server(httpServer, {
+      path: "/api/socketio",
+    });
   }
 
   const io = res.socket.server.io;

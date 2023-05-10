@@ -1,4 +1,4 @@
-import {io, Socket} from "socket.io-client";
+import {io, Socket, connect} from "socket.io-client";
 import {
   receivedMessage,
   userJoined,
@@ -19,7 +19,9 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    this.socket = io("https://react-live-chat-mu.vercel.app/api");
+    this.socket = io(process.env.BASE_URL || "http://localhost:3000", {
+      path: "/api/socketio",
+    });
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
