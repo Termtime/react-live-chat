@@ -19,7 +19,7 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    this.socket = io();
+    this.socket = io("https://react-live-chat-mu.vercel.app/");
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
