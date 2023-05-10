@@ -19,11 +19,7 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    const url = "http://localhost:3000";
-
-    // fetch(url);
-    console.log("Connecting to server");
-    this.socket = io(url);
+    this.socket = io();
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
