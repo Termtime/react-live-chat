@@ -27,7 +27,14 @@ export class SocketConnection {
 
     this.socket = io({
       path: apiRoute,
-      addTrailingSlash: false,
+      // addTrailingSlash: false,
+      transportOptions: {
+        polling: {
+          extraHeaders: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        },
+      },
     });
     const dispatch = getAppDispatch();
 
