@@ -18,6 +18,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
+import {apiRoute} from "../utils/constants";
 
 const con = SocketConnection.getInstance();
 
@@ -59,7 +60,7 @@ const HomePage = () => {
   `;
 
   useEffect(() => {
-    fetch("/api/");
+    fetch(apiRoute);
   }, []);
 
   return (

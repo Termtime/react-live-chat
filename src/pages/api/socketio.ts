@@ -9,6 +9,7 @@ import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import NextCors from "nextjs-cors";
+import {apiRoute} from "../../utils/constants";
 
 interface Room {
   id: string;
@@ -83,7 +84,7 @@ export default async function handler(
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
     res.socket.server.io = new Server(httpServer, {
-      path: "/api/socketio",
+      path: apiRoute,
     });
   }
 
