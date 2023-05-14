@@ -19,9 +19,18 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    this.socket = io(process.env.BASE_URL || "http://localhost:3000", {
-      path: "/api/socketio",
-    });
+    console.log(
+      "Initializing socket connection to server",
+      process.env.BASE_URL
+    );
+    console.log("replaced", process.env.BASE_URL?.replace("https", "ws"));
+
+    this.socket = io(
+      process.env.BASE_URL?.replace("https", "ws") || "http://localhost:3000",
+      {
+        path: "/api/socketio",
+      }
+    );
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
