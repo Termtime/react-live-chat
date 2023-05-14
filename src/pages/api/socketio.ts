@@ -67,6 +67,7 @@ const generateLinkedColor = (username: string) => {
 };
 
 const cors = Cors({
+  origin: "*",
   methods: ["POST", "GET", "HEAD"],
 });
 
