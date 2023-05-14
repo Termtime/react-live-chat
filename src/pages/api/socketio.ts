@@ -66,35 +66,10 @@ const generateLinkedColor = (username: string) => {
   return colors[index];
 };
 
-const cors = Cors({
-  origin: "*",
-  methods: ["POST", "GET", "HEAD"],
-});
-
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-function runMiddleware(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  fn: Function
-) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-
-      return resolve(result);
-    });
-  });
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  await runMiddleware(req, res, cors);
-
   if (res.socket?.server.io) {
     console.log("Socket is already running");
     res.end();
@@ -102,13 +77,7 @@ export default async function handler(
   } else {
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
-    res.socket.server.io = new Server(httpServer, {
-      path: apiRoute,
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-      },
-    });
+    res.socket.server.io = new Server(httpServer);
   }
 
   const io = res.socket.server.io;

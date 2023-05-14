@@ -25,13 +25,7 @@ export class SocketConnection {
       `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     );
 
-    this.socket = io(
-      `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` ||
-        "http://localhost:3000",
-      {
-        path: apiRoute,
-      }
-    );
+    this.socket = io();
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
