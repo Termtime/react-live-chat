@@ -70,7 +70,7 @@ export default async function handler(
   res: NextApiResponseWithSocket
 ) {
   // await NextCors(req, res, {
-  //   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  //   methods: ["GET", "POST"],
   //   origin: "*",
   //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   // });
