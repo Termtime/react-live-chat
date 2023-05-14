@@ -81,7 +81,7 @@ export default async function handler(
   } else {
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
-    res.socket.server.io = new Server(httpServer);
+    res.socket.server.io = new Server(httpServer, {path: apiRoute});
   }
 
   const io = res.socket.server.io;
@@ -223,5 +223,6 @@ export default async function handler(
       });
     }
   );
+
   res.end();
 }
