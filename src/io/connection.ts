@@ -22,9 +22,7 @@ export class SocketConnection {
   private initializeSocket() {
     console.log("Initializing socket connection to server");
 
-    this.socket = io({
-      path: apiRoute,
-    });
+    this.socket = io();
     const dispatch = getAppDispatch();
 
     const onReceivedMessage = (message: UserEncryptedMessage) => {

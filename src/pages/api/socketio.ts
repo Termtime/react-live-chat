@@ -2,10 +2,8 @@
 import type {Server as HTTPServer} from "http";
 import type {NextApiRequest, NextApiResponse} from "next";
 import type {Socket as NetSocket} from "net";
-import type {Server as IOServer} from "socket.io";
+import {Server as IOServer} from "socket.io";
 import {Server as NetServer} from "http";
-
-import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import {apiRoute} from "../../utils/constants";
@@ -64,7 +62,7 @@ const generateLinkedColor = (username: string) => {
   return colors[index];
 };
 
-export const config: NextApi = {
+export const config = {
   api: {
     bodyParser: false,
   },
@@ -74,18 +72,16 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  if (res.socket?.server.io) {
+  if (res.socket.server.io) {
     console.log("Socket is already running");
     res.end();
     return;
-  } else {
-    console.log("Socket is initializing");
-    const httpServer: NetServer = res.socket.server as any;
-    res.socket.server.io = new Server(httpServer, {path: apiRoute});
-    res.socket.server.io.listen(httpServer);
   }
 
-  const io = res.socket.server.io;
+  console.log("Socket is initializing");
+  const httpServer: NetServer = res.socket.server;
+  const io = new IOServer(httpServer);
+  res.socket.server.io = io;
 
   io.on(
     "connection",
