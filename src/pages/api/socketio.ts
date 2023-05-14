@@ -69,11 +69,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  // await NextCors(req, res, {
-  //   methods: ["GET", "POST"],
-  //   origin: "*",
-  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  // });
+  await NextCors(req, res, {
+    methods: ["GET", "POST"],
+    origin: "*",
+  });
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
