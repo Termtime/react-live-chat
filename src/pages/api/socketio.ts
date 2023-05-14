@@ -83,6 +83,7 @@ export default async function handler(
     const httpServer: NetServer = res.socket.server as any;
     res.socket.server.io = new Server(httpServer, {
       path: apiRoute,
+      addTrailingSlash: false,
     });
   }
 
