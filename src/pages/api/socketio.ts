@@ -2,7 +2,7 @@
 import type {Server as HTTPServer} from "http";
 import type {NextApiRequest, NextApiResponse} from "next";
 import type {Socket as NetSocket} from "net";
-import {Server as IOServer} from "socket.io";
+import {Server as IOServer, Socket} from "socket.io";
 import {Server as NetServer} from "http";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
