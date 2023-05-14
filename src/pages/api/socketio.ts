@@ -64,6 +64,12 @@ const generateLinkedColor = (username: string) => {
   return colors[index];
 };
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
