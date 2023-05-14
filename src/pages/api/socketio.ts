@@ -8,9 +8,6 @@ import {Server as NetServer} from "http";
 import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
-import NextCors from "nextjs-cors";
-import {apiRoute} from "../../utils/constants";
-import Cors from "cors";
 
 interface Room {
   id: string;
