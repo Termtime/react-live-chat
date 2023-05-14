@@ -22,11 +22,12 @@ export class SocketConnection {
   private initializeSocket() {
     console.log(
       "Initializing socket connection to server",
-      `https://${process.env.VERCEL_URL}`
+      `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     );
 
     this.socket = io(
-      `https://${process.env.VERCEL_URL}` || "http://localhost:3000",
+      `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` ||
+        "http://localhost:3000",
       {
         path: apiRoute,
       }
