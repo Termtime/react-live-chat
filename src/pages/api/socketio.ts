@@ -64,7 +64,7 @@ const generateLinkedColor = (username: string) => {
   return colors[index];
 };
 
-export const config = {
+export const config: NextApi = {
   api: {
     bodyParser: false,
   },
@@ -82,6 +82,7 @@ export default async function handler(
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
     res.socket.server.io = new Server(httpServer, {path: apiRoute});
+    res.socket.server.io.listen(httpServer);
   }
 
   const io = res.socket.server.io;
