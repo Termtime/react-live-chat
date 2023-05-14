@@ -59,7 +59,7 @@ const HomePage = () => {
 
   useEffect(() => {
     const init = async () => {
-      await fetch(apiRoute);
+      await fetch("api/socketio");
       SocketConnection.getInstance();
     };
 
