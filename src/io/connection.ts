@@ -27,6 +27,7 @@ export class SocketConnection {
 
     this.socket = io({
       path: apiRoute,
+      addTrailingSlash: false,
     });
     console.log("Connected to server");
     const dispatch = getAppDispatch();
