@@ -45,6 +45,8 @@ export class SocketConnection {
     });
     this.socket.on("connect_error", (err) => {
       console.log("Connection error: ", err);
+      console.log(err.cause);
+      console.log(err.message);
     });
     this.socket.on("userJoined", (user: User) => dispatch(userJoined(user)));
 
