@@ -10,6 +10,7 @@ import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import NextCors from "nextjs-cors";
 import {apiRoute} from "../../utils/constants";
+import Cors from "cors";
 
 interface Room {
   id: string;
@@ -69,13 +70,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  // await NextCors(req, res, {
-  //   // Options
-  //   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-  //   origin: "https://react-live-chat-mu.vercel.app/",
-  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  // });
-
   if (res.socket?.server.io) {
     console.log("Socket is already running");
     res.end();
@@ -83,9 +77,7 @@ export default async function handler(
   } else {
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
-    res.socket.server.io = new Server(httpServer, {
-      path: apiRoute,
-    });
+    res.socket.server.io = new Server(httpServer);
   }
 
   const io = res.socket.server.io;
