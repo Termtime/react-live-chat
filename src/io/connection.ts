@@ -10,6 +10,7 @@ import {
 import {getAppDispatch} from "../redux/toolkit/store";
 import {UserEncryptedMessage, User} from "../types";
 import {ClientToServerEvents, ServerToClientEvents} from "./events";
+import {apiRoute} from "../utils/constants";
 
 export class SocketConnection {
   private static instance: SocketConnection;
@@ -21,14 +22,13 @@ export class SocketConnection {
   private initializeSocket() {
     console.log(
       "Initializing socket connection to server",
-      process.env.BASE_URL
+      `https://${process.env.VERCEL_URL}`
     );
-    console.log("replaced", process.env.BASE_URL?.replace("https", "ws"));
 
     this.socket = io(
-      process.env.BASE_URL?.replace("https", "ws") || "http://localhost:3000",
+      `https://${process.env.VERCEL_URL}` || "http://localhost:3000",
       {
-        path: "/api/socketio",
+        path: apiRoute,
       }
     );
     console.log("Connected to server");
