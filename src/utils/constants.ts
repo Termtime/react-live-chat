@@ -1,1 +1,1 @@
-export const apiRoute = "/api/socket";
+export const apiRoute = "/api/socketio";
