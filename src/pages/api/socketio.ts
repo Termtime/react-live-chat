@@ -10,6 +10,7 @@ import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import NextCors from "nextjs-cors";
 import {apiRoute} from "../../utils/constants";
+import Cors from "cors";
 
 interface Room {
   id: string;
@@ -65,14 +66,33 @@ const generateLinkedColor = (username: string) => {
   return colors[index];
 };
 
+const cors = Cors({
+  methods: ["POST", "GET", "HEAD"],
+});
+
+// Helper method to wait for a middleware to execute before continuing
+// And to throw an error when an error happens in a middleware
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: Function
+) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+
+      return resolve(result);
+    });
+  });
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  await NextCors(req, res, {
-    methods: ["GET", "POST"],
-    origin: "*",
-  });
+  await runMiddleware(req, res, cors);
 
   if (res.socket?.server.io) {
     console.log("Socket is already running");
