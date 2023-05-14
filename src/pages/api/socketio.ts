@@ -8,6 +8,7 @@ import {Server as NetServer} from "http";
 import {Socket, Server} from "socket.io";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
+import {apiRoute} from "../../utils/constants";
 
 interface Room {
   id: string;
@@ -74,7 +75,9 @@ export default async function handler(
   } else {
     console.log("Socket is initializing");
     const httpServer: NetServer = res.socket.server as any;
-    res.socket.server.io = new Server(httpServer);
+    res.socket.server.io = new Server(httpServer, {
+      path: apiRoute,
+    });
   }
 
   const io = res.socket.server.io;
