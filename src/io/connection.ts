@@ -25,7 +25,9 @@ export class SocketConnection {
       `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     );
 
-    this.socket = io();
+    this.socket = io({
+      path: apiRoute,
+    });
     console.log("Connected to server");
     const dispatch = getAppDispatch();
 
