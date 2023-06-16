@@ -7,6 +7,7 @@ import {Server as NetServer} from "http";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
 import {apiRoute} from "../../utils/constants";
+import Cors from "cors";
 
 interface Room {
   id: string;
@@ -72,10 +73,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  if (res.socket.server.io) {
+  if (res.socket?.server.io) {
     console.log("Socket is already running");
     res.end();
     return;
+  } else {
+    console.log("Socket is initializing");
+    const httpServer: NetServer = res.socket.server as any;
+    res.socket.server.io = new Server(httpServer);
   }
 
   console.log("Socket is initializing");
