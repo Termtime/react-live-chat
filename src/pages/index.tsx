@@ -20,8 +20,6 @@ import {
 import {css} from "@emotion/react";
 import {apiRoute} from "../utils/constants";
 
-const con = SocketConnection.getInstance();
-
 const HomePage = () => {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -60,7 +58,12 @@ const HomePage = () => {
   `;
 
   useEffect(() => {
-    fetch(apiRoute);
+    const init = async () => {
+      await fetch("api/socketio");
+      SocketConnection.getInstance();
+    };
+
+    init();
   }, []);
 
   return (

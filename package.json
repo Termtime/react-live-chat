@@ -27,7 +27,6 @@
     "framer-motion": "^10.12.7",
     "lodash.debounce": "^4.0.8",
     "next": "13.2.4",
-    "nextjs-cors": "^2.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-redux": "^8.0.5",

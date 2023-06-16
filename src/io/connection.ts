@@ -20,15 +20,9 @@ export class SocketConnection {
   private constructor() {}
 
   private initializeSocket() {
-    console.log(
-      "Initializing socket connection to server",
-      `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    );
+    console.log("Initializing socket connection to server");
 
-    this.socket = io({
-      path: apiRoute,
-    });
-    console.log("Connected to server");
+    this.socket = io();
     const dispatch = getAppDispatch();
 
     const onReceivedMessage = (message: UserEncryptedMessage) => {
@@ -44,6 +38,14 @@ export class SocketConnection {
     };
 
     console.log("Configuring socket events");
+    this.socket.on("connect", () => {
+      console.log("Connected to server");
+    });
+    this.socket.on("connect_error", (err) => {
+      console.log("Connection error: ", err);
+      console.log(err.cause);
+      console.log(err.message);
+    });
     this.socket.on("userJoined", (user: User) => dispatch(userJoined(user)));
 
     this.socket.on("userLeft", (user: User) => dispatch(userLeft(user)));
