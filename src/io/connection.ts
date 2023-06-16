@@ -11,16 +11,30 @@ import {getAppDispatch} from "../redux/toolkit/store";
 import {UserEncryptedMessage, User} from "../types";
 import {ClientToServerEvents, ServerToClientEvents} from "./events";
 import {apiRoute} from "../utils/constants";
+import Pusher from "pusher-js";
 
 export class SocketConnection {
   private static instance: SocketConnection;
 
   private socket!: Socket<ServerToClientEvents, ClientToServerEvents>;
+  private pusher!: Pusher;
 
   private constructor() {}
 
   private initializeSocket() {
     console.log("Initializing socket connection to server");
+
+    // Enable pusher logging - don't include this in production
+    Pusher.logToConsole = true;
+
+    this.pusher = new Pusher("95df5bac7ba14bda37e3", {
+      cluster: "us2",
+    });
+
+    const channel = this.pusher.subscribe("my-channel");
+    channel.bind("my-event", function (data) {
+      alert(JSON.stringify(data));
+    });
 
     this.socket = io();
     const dispatch = getAppDispatch();
