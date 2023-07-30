@@ -11,7 +11,9 @@ import {getAppDispatch} from "../redux/toolkit/store";
 import {UserEncryptedMessage, User} from "../types";
 import {ClientToServerEvents, ServerToClientEvents} from "./events";
 import {apiRoute} from "../utils/constants";
-import Pusher from "pusher-js";
+import Pusher, {PresenceChannel} from "pusher-js";
+import {getPusherInstance} from "../utils";
+import {PUSHER_EVENT} from "../types/events";
 
 export class SocketConnection {
   private static instance: SocketConnection;
@@ -21,23 +23,41 @@ export class SocketConnection {
 
   private constructor() {}
 
-  private initializeSocket() {
+  private initializeSocket(roomId: string) {
     console.log("Initializing socket connection to server");
 
     // Enable pusher logging - don't include this in production
     Pusher.logToConsole = true;
 
-    this.pusher = new Pusher("95df5bac7ba14bda37e3", {
-      cluster: "us2",
-    });
+    const pusher = getPusherInstance();
 
-    const channel = this.pusher.subscribe("my-channel");
-    channel.bind("my-event", function (data) {
-      alert(JSON.stringify(data));
-    });
+    if (!pusher) {
+      throw new Error("Pusher instance not found");
+    }
 
-    this.socket = io();
+    const channel = pusher.subscribe(roomId);
+    const presenceChannel = pusher.subscribe(
+      `presence-${roomId}`
+    ) as PresenceChannel;
+
+    const users = presenceChannel.members;
+
+    console.log("User joined room: ", {channel, users});
     const dispatch = getAppDispatch();
+
+    // Will have to change users to be of type Members or transform them to an array of Users
+    // socketID can be changed to be the user id for clarity or just transfer the `me` member
+    // to the redux store
+
+    // BEFORE - HANDSHAKE ACKNOWLEDGE - used to get user list and socket/user id
+    // this.socket.on("handshakeAcknowledge", (users, socketId) =>
+    //   dispatch(handshakeAcknowledge({users, socketId}))
+    // );
+
+    // AFTER
+    dispatch(handshakeAcknowledge({users, socketId: users.me.id}));
+
+    // this.socket = io();
 
     const onReceivedMessage = (message: UserEncryptedMessage) => {
       if (typeof window !== "undefined") {
@@ -52,32 +72,55 @@ export class SocketConnection {
     };
 
     console.log("Configuring socket events");
-    this.socket.on("connect", () => {
-      console.log("Connected to server");
-    });
-    this.socket.on("connect_error", (err) => {
-      console.log("Connection error: ", err);
-      console.log(err.cause);
-      console.log(err.message);
-    });
-    this.socket.on("userJoined", (user: User) => dispatch(userJoined(user)));
+    // Not 100% sure if this is needed, as the whole `connect` event has already happened
+    // in this running context.
+    // this.socket.on("connect", () => {
+    //   console.log("Connected to server");
+    // });
 
-    this.socket.on("userLeft", (user: User) => dispatch(userLeft(user)));
+    // No idea so far if there is an equivalent for this using pusher
+    // this.socket.on("connect_error", (err) => {
+    //   console.log("Connection error: ", err);
+    //   console.log(err.cause);
+    //   console.log(err.message);
+    // });
 
-    this.socket.on("message", (message: UserEncryptedMessage) =>
+    // BEFORE - USER JOINED
+    // this.socket.on("userJoined", (user: User) => dispatch(userJoined(user)));
+
+    // BEFORE - USER LEFT
+    // this.socket.on("userLeft", (user: User) => dispatch(userLeft(user)));
+
+    // ABOVE Will be handled by pressence channels
+
+    // BEFORE - RECEIVED MESSAGE
+    // this.socket.on("message", (message: UserEncryptedMessage) =>
+    //   onReceivedMessage(message)
+    // );
+
+    // AFTER
+    this.pusher.bind(PUSHER_EVENT.MESSAGE, (message: UserEncryptedMessage) =>
       onReceivedMessage(message)
     );
 
-    this.socket.on("userStartedTyping", (user: User) =>
+    // BEFORE - START TYPING
+    // this.socket.on("userStartedTyping", (user: User) =>
+    //   dispatch(userStartedTyping(user))
+    // );
+
+    // AFTER
+    this.pusher.bind(PUSHER_EVENT.START_TYPING, (user: User) =>
       dispatch(userStartedTyping(user))
     );
 
-    this.socket.on("userStoppedTyping", (user: User) =>
-      dispatch(userStoppedTyping(user))
-    );
+    // BEFORE - STOP TYPING
+    // this.socket.on("userStoppedTyping", (user: User) =>
+    //   dispatch(userStoppedTyping(user))
+    // );
 
-    this.socket.on("handshakeAcknowledge", (users, socketId) =>
-      dispatch(handshakeAcknowledge({users, socketId}))
+    // AFTER
+    this.pusher.bind(PUSHER_EVENT.STOP_TYPING, (user: User) =>
+      dispatch(userStoppedTyping(user))
     );
 
     return this.socket;

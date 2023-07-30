@@ -1,4 +1,4 @@
-import Pusher from "pusher";
+import Pusher from "pusher-js";
 
 export const getPusherInstance = () => {
   const appId = process.env.PUSHER_APP_ID;
@@ -11,12 +11,8 @@ export const getPusherInstance = () => {
     return;
   }
 
-  const pusher = new Pusher({
-    appId,
-    key,
-    secret,
+  const pusher = new Pusher(appId, {
     cluster,
-    useTLS: useTLS === "true",
   });
 
   return pusher;

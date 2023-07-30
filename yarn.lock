@@ -3848,10 +3848,10 @@ punycode@^2.1.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
 
-pusher-js@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/pusher-js/-/pusher-js-8.1.0.tgz#1dcfabe01a50dad86e9eef1e41d4e3aeae186c8b"
-  integrity sha512-uccd3kMmcT4c1WB88/DNm6NZsK2Keu0gcSz68EjNJKyXhGQUFCWf3TFuNOCu8lr2LTSbtt+TES4Lg5Qs46NULA==
+pusher-js@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/pusher-js/-/pusher-js-8.3.0.tgz#a40d76c373a56ba8b3de2c55414380cb49975207"
+  integrity sha512-6GohP06WlVeomAQQe9qWh1IDzd3+InluWt+ZUOcecVK1SEQkg6a8uYVsvxSJm7cbccfmHhE0jDkmhKIhue8vmA==
   dependencies:
     tweetnacl "^1.0.3"
 
