@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {useRouter} from "next/router";
 import {joinRoom} from "../redux/toolkit/features/chatSlice";
 import {useAppDispatch} from "../redux/toolkit/store";
-import {SocketConnection} from "../io/connection";
+import {PusherConnection} from "../io/connection";
 import {
   Box,
   Button,
@@ -60,7 +60,7 @@ const HomePage = () => {
   useEffect(() => {
     const init = async () => {
       await fetch("api/socketio");
-      SocketConnection.getInstance();
+      PusherConnection.getInstance();
     };
 
     init();

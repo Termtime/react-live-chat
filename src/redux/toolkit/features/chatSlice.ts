@@ -9,7 +9,7 @@ import {
   UserEncryptedMessage,
 } from "../../../types";
 import {decryptMessage, encryptMessage, generateKeys} from "../../../utils";
-import {SocketConnection} from "../../../io/connection";
+import {PusherConnection} from "../../../io/connection";
 import {RootState} from "../store";
 
 export interface ChatState {
@@ -122,10 +122,10 @@ export const chatSlice = createSlice({
   reducers: {
     leaveRoom: (state) => {
       console.log("Leave Room");
-      const socket = SocketConnection.getInstance().getSocket();
+      const pusher = PusherConnection.getInstance().getPusher();
 
       if (state.roomId) {
-        socket.emit("leaveRoom", state.roomId);
+        pusher.send_event("leaveRoom", state.roomId);
       }
       console.log("Setting state");
 
@@ -166,14 +166,14 @@ export const chatSlice = createSlice({
     },
     startTyping: (state, action: PayloadAction<string>) => {
       console.log("=========== START TYPING ===========\n", action.payload);
-      const socket = SocketConnection.getInstance().getSocket();
-      socket.emit("startedTyping", action.payload);
+      const pusher = PusherConnection.getInstance().getPusher();
+      pusher.send_event("startedTyping", action.payload);
     },
     stopTyping: (state, action: PayloadAction<string>) => {
       console.log("=========== STOP TYPING ===========\n", action.payload);
-      const socket = SocketConnection.getInstance().getSocket();
+      const pusher = PusherConnection.getInstance().getPusher();
 
-      socket.emit("stoppedTyping", action.payload);
+      pusher.send_event("stoppedTyping", action.payload);
     },
     userStartedTyping: (state, action: PayloadAction<User>) => {
       console.log(
@@ -202,7 +202,7 @@ export const chatSlice = createSlice({
       console.log("ERROR joining room", action.error);
     });
     builder.addCase(joinRoom.fulfilled, (state, action) => {
-      const socket = SocketConnection.getInstance().getSocket();
+      const socket = PusherConnection.getInstance().getPusher();
 
       const publicAuthUser: PublicAuthUser = {
         username: action.payload.authUser.username,
@@ -214,7 +214,7 @@ export const chatSlice = createSlice({
       };
 
       console.log("=========== JOINING ROOM... ===========");
-      socket.emit("joinRoom", handshakeInfo);
+      socket.send_event("joinRoom", handshakeInfo);
       state.roomId = action.payload.roomId;
       state.user = action.payload.authUser;
     });
@@ -223,11 +223,11 @@ export const chatSlice = createSlice({
       console.log("ERROR sending message", action.error);
     });
     builder.addCase(sendMessage.fulfilled, (state, action) => {
-      const socket = SocketConnection.getInstance().getSocket();
+      const socket = PusherConnection.getInstance().getPusher();
 
       console.log("=========== SENDING MESSAGE ===========\n", action.payload);
 
-      socket.emit("message", action.payload.encryptedMessages);
+      socket.send_event("message", action.payload.encryptedMessages);
 
       state.messages = [...state.messages, action.payload.message];
     });
