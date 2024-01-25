@@ -1,6 +1,6 @@
-import Pusher from "pusher-js";
+import Pusher from "pusher";
 
-export const getPusherInstance = () => {
+export const initializeServerPusher = () => {
   const appId = process.env.PUSHER_APP_ID;
   const key = process.env.PUSHER_KEY;
   const secret = process.env.PUSHER_SECRET;
@@ -8,16 +8,19 @@ export const getPusherInstance = () => {
   const useTLS = process.env.PUSHER_USE_TLS;
 
   if (!appId || !key || !secret || !cluster || !useTLS) {
-    return;
+    throw new Error("Pusher environment variables not set");
   }
 
-  const pusher = new Pusher(appId, {
+  const pusher = new Pusher({
+    appId,
+    key,
+    secret,
     cluster,
+    useTLS: useTLS === "true",
   });
 
   return pusher;
 };
-
 export const generateLinkedColor = (username: string) => {
   const colors = [
     "#E91E63",

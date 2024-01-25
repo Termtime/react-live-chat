@@ -47,6 +47,13 @@ export const joinRoom = createAsyncThunk(
       symetricKey,
     };
 
+    const pusher = PusherConnection.getInstance({
+      roomId,
+      authUserInfo: authUser,
+    }).getPusher();
+
+    console.log("pusher object", pusher);
+
     return {authUser, roomId};
   }
 );
@@ -195,6 +202,7 @@ export const chatSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(joinRoom.pending, (state) => {
       state.loading = true;
+
       console.log("Loading...");
     });
     builder.addCase(joinRoom.rejected, (state, action) => {
@@ -202,7 +210,7 @@ export const chatSlice = createSlice({
       console.log("ERROR joining room", action.error);
     });
     builder.addCase(joinRoom.fulfilled, (state, action) => {
-      const socket = PusherConnection.getInstance().getPusher();
+      const pusher = PusherConnection.getInstance().getPusher();
 
       const publicAuthUser: PublicAuthUser = {
         username: action.payload.authUser.username,
@@ -214,7 +222,7 @@ export const chatSlice = createSlice({
       };
 
       console.log("=========== JOINING ROOM... ===========");
-      socket.send_event("joinRoom", handshakeInfo);
+      pusher.send_event("joinRoom", handshakeInfo);
       state.roomId = action.payload.roomId;
       state.user = action.payload.authUser;
     });

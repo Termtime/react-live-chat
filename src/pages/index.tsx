@@ -57,14 +57,13 @@ const HomePage = () => {
     min-height: 55vh;
   `;
 
-  useEffect(() => {
-    const init = async () => {
-      await fetch("api/socketio");
-      PusherConnection.getInstance();
-    };
+  // useEffect(() => {
+  //   const init = async () => {
 
-    init();
-  }, []);
+  //   };
+
+  //   init();
+  // }, []);
 
   return (
     <Flex direction="column">

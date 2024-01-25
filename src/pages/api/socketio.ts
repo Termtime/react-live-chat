@@ -6,8 +6,8 @@ import {Server as IOServer, Socket} from "socket.io";
 import {Server as NetServer} from "http";
 import {ClientToServerEvents, ServerToClientEvents} from "../../io/events";
 import {User} from "../../types";
-import {apiRoute} from "../../utils/constants";
-import Cors from "cors";
+// import {apiRoute} from "../../utils/constants";
+// import Cors from "cors";
 
 interface Room {
   id: string;
