@@ -2,9 +2,9 @@ import Pusher from "pusher";
 
 export const initializeServerPusher = () => {
   const appId = process.env.PUSHER_APP_ID;
-  const key = process.env.PUSHER_KEY;
+  const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
   const secret = process.env.PUSHER_SECRET;
-  const cluster = process.env.PUSHER_CLUSTER;
+  const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
   const useTLS = process.env.PUSHER_USE_TLS;
 
   if (!appId || !key || !secret || !cluster || !useTLS) {

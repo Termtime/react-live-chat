@@ -222,6 +222,8 @@ export const chatSlice = createSlice({
       };
 
       console.log("=========== JOINING ROOM... ===========");
+
+      console.log("pusher", pusher);
       pusher.send_event("joinRoom", handshakeInfo);
       state.roomId = action.payload.roomId;
       state.user = action.payload.authUser;
@@ -231,11 +233,11 @@ export const chatSlice = createSlice({
       console.log("ERROR sending message", action.error);
     });
     builder.addCase(sendMessage.fulfilled, (state, action) => {
-      const socket = PusherConnection.getInstance().getPusher();
+      const pusher = PusherConnection.getInstance().getPusher();
 
       console.log("=========== SENDING MESSAGE ===========\n", action.payload);
 
-      socket.send_event("message", action.payload.encryptedMessages);
+      pusher.send_event("message", action.payload.encryptedMessages);
 
       state.messages = [...state.messages, action.payload.message];
     });

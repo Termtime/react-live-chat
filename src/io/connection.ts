@@ -30,25 +30,22 @@ export class PusherConnection {
     // Enable pusher logging - don't include this in production
     Pusher.logToConsole = process.env.NODE_ENV === "development";
 
-    const appId = process.env.PUSHER_APP_ID;
-    const key = process.env.PUSHER_KEY;
-    const secret = process.env.PUSHER_SECRET;
-    const cluster = process.env.PUSHER_CLUSTER;
-    const useTLS = process.env.PUSHER_USE_TLS;
+    const appKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
 
-    if (!appId || !key || !secret || !cluster || !useTLS) {
+    console.log("Pusher environment variables", {appKey, cluster});
+    if (!appKey || !cluster) {
       throw new Error("Pusher environment variables not set");
     }
 
-    this.pusher = new Pusher(appId, {
+    this.pusher = new Pusher(appKey, {
       cluster,
-      userAuthentication: {
-        endpoint: "/api/pusher/user-auth",
+      authEndpoint: "/api/pusher/user-auth",
+      auth: {
         params: {
           username: authUserInfo.username,
           publicKey: authUserInfo.publicKey,
         },
-        transport: "ajax",
       },
     });
 
@@ -76,6 +73,10 @@ export class PusherConnection {
             color: meMember.info.color,
             publicKey: meMember.info.publicKey,
           };
+
+          console.log("Me", me);
+          console.log("Members", members);
+
           members.each((member: {id: string; info: Omit<User, "id">}) => {
             const user: User = {
               id: member.id,
@@ -188,6 +189,8 @@ export class PusherConnection {
         "ERROR: Trying to initialize the pusher connection without required parameters"
       );
     }
+
+    console.log("Returning pusher instance", PusherConnection.instance);
     return PusherConnection.instance;
   }
 

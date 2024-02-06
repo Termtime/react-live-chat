@@ -27,8 +27,16 @@ const HomePage = () => {
   const dispatch = useAppDispatch();
 
   const onClick: React.MouseEventHandler = (e) => {
-    dispatch(joinRoom({roomId, username}));
-    router.push("/chat");
+    dispatch(joinRoom({roomId, username}))
+      .then((action) => {
+        if (action.payload) {
+          router.push("/chat");
+        }
+      })
+      .catch((err) => {
+        alert("Error joining room");
+        console.log(err);
+      });
   };
 
   const homePageHeaderStyles = css`
@@ -56,14 +64,6 @@ const HomePage = () => {
     padding: 2vw;
     min-height: 55vh;
   `;
-
-  // useEffect(() => {
-  //   const init = async () => {
-
-  //   };
-
-  //   init();
-  // }, []);
 
   return (
     <Flex direction="column">
