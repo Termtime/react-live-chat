@@ -4,40 +4,53 @@ import {
   AuthUser,
   Message,
   PublicAuthUser,
-  RoomHandshake,
   User,
   UserEncryptedMessage,
 } from "../../../types";
 import {decryptMessage, encryptMessage, generateKeys} from "../../../utils";
-import {PusherConnection} from "../../../io/connection";
+import {PusherConnection} from "../../../pusher/connection";
 import {RootState} from "../store";
+import {PUSHER_CLIENT_EVENT} from "../../../types/events";
 
-export interface ChatState {
-  user: AuthUser | null;
+export interface Room {
+  id: string;
+  name: string;
   users: User[];
+}
+export interface ChatState {
+  /**
+   * The user that is currently logged in
+   */
+  authUser: AuthUser | null;
+  /**
+   * The messages in the current room
+   */
   messages: Message[];
-  roomId: string | null;
+  /**
+   * The room that the user is currently in
+   */
+  room: Room | null;
+  /**
+   * Users that are currently typing
+   */
   typingUsers: User[];
-  loading: boolean;
+  /**
+   * Whether the room is currently being connected to
+   */
+  isLoadingRoom: boolean;
 }
 
 const initialState: ChatState = {
-  user: null,
-  users: [],
+  authUser: null,
   messages: [],
-  roomId: null,
+  room: null,
   typingUsers: [],
-  loading: false,
+  isLoadingRoom: false,
 };
 
-interface JoinRoomPayload {
-  username: string;
-  roomId: string;
-}
-
-export const joinRoom = createAsyncThunk(
-  "chat/joinRoom",
-  async ({username, roomId}: JoinRoomPayload, thunkAPI) => {
+export const login = createAsyncThunk(
+  "auth/login",
+  async (username: string, thunkAPI) => {
     const {privateKey, publicKey, symetricKey} = await generateKeys();
 
     const authUser: AuthUser = {
@@ -47,14 +60,24 @@ export const joinRoom = createAsyncThunk(
       symetricKey,
     };
 
-    const pusher = PusherConnection.getInstance({
-      roomId,
-      authUserInfo: authUser,
-    }).getPusher();
+    const myPublicIdentity: PublicAuthUser = {
+      username,
+      publicKey,
+    };
 
-    console.log("pusher object", pusher);
+    PusherConnection.setup(myPublicIdentity);
 
-    return {authUser, roomId};
+    return authUser;
+  }
+);
+
+export const joinRoom = createAsyncThunk(
+  "chat/joinRoom",
+  async (roomId: string) => {
+    const pusherConnection = PusherConnection.getInstance();
+    const room = await pusherConnection.connectToChannel(roomId);
+
+    return {room};
   }
 );
 
@@ -63,18 +86,18 @@ export const sendMessage = createAsyncThunk(
   async (payload: {message: Message; roomId: string}, thunkAPI) => {
     console.log("=========== SEND MESSAGE ===========\n", payload);
     const state = thunkAPI.getState() as RootState;
-    const {user: authUser} = state.chat;
+    const {authUser} = state.chat;
     const {message, roomId} = payload;
 
-    console.log("user", authUser);
-
     if (!authUser || !roomId) {
-      throw new Error("User or Room ID not set");
+      throw new Error("User not logged in or Room ID not passed");
     }
 
     const encryptedMessages = [] as UserEncryptedMessage[];
 
-    const channelMembers = state.chat.users.filter((u) => u.id !== authUser.id);
+    const channelMembers = state.chat.room!.users.filter(
+      (u) => u.id !== authUser.id
+    );
 
     for (const user of channelMembers) {
       if (user.publicKey) {
@@ -103,23 +126,32 @@ export const sendMessage = createAsyncThunk(
 
 export const receivedMessage = createAsyncThunk(
   "chat/receivedMessage",
-  async (message: UserEncryptedMessage, thunkAPI) => {
-    console.log("=========== RECEIVED MESSAGE ===========\n", message);
+  async (messageArray: UserEncryptedMessage[], thunkAPI) => {
+    console.log("=========== RECEIVED MESSAGE ===========\n", messageArray);
     const state = thunkAPI.getState() as RootState;
-    const {user: authUser} = state.chat;
+    const {authUser: authUser} = state.chat;
 
     if (!authUser) {
       throw new Error("User not set");
     }
 
+    const messageForMe = messageArray.find(
+      (m) => m.recipient.id === authUser.id
+    );
+
+    if (!messageForMe) {
+      console.log("No message for me, returning");
+      return;
+    }
+
     const decryptedMessage = await decryptMessage(
-      message.message,
-      message.key,
-      message.iv,
+      messageForMe.message,
+      messageForMe.key,
+      messageForMe.iv,
       authUser.privateKey
     );
 
-    return {message: decryptedMessage, roomId: message.roomId};
+    return {message: decryptedMessage, roomId: messageForMe.roomId};
   }
 );
 
@@ -128,59 +160,41 @@ export const chatSlice = createSlice({
   initialState,
   reducers: {
     leaveRoom: (state) => {
-      console.log("Leave Room");
-      const pusher = PusherConnection.getInstance().getPusher();
+      console.log("=========== LEAVING ROOM ===========", state.room!.id);
+      PusherConnection.getInstance().disconnect(state.room!.id);
 
-      if (state.roomId) {
-        pusher.send_event("leaveRoom", state.roomId);
-      }
-      console.log("Setting state");
-
-      state.loading = state.loading;
-      state.user = initialState.user;
-      state.users = initialState.users;
-      state.messages = initialState.messages;
-      state.roomId = initialState.roomId;
-      state.typingUsers = initialState.typingUsers;
-    },
-    handshakeAcknowledge: (
-      state,
-      action: PayloadAction<{users: User[]; socketId: string}>
-    ) => {
-      console.log(
-        "=========== HANDSHAKE RESPONSE ===========\n",
-        action.payload
-      );
-      state.users = action.payload.users;
-      state.loading = false;
-      state.user!.id = action.payload.socketId;
-      state.user!.color = action.payload.users.find(
-        (u) => u.id === action.payload.socketId
-      )?.color;
-
-      console.log(
-        "state",
-        action.payload.users.find((u) => u.id === action.payload.socketId)
-      );
+      state = initialState;
     },
     userJoined: (state, action: PayloadAction<User>) => {
       console.log("=========== USER JOINED ===========\n", action.payload);
-      state.users = [...state.users, action.payload];
+      state.room!.users = [...state.room!.users, action.payload];
     },
     userLeft: (state, action: PayloadAction<User>) => {
       console.log("=========== USER LEFT ===========\n", action.payload);
-      state.users = state.users.filter((user) => user.id !== action.payload.id);
+      state.room!.users = state.room!.users.filter(
+        (user) => user.id !== action.payload.id
+      );
     },
     startTyping: (state, action: PayloadAction<string>) => {
       console.log("=========== START TYPING ===========\n", action.payload);
+      const roomId = action.payload;
+      if (!roomId) {
+        console.log("Room ID is null, returning");
+        return;
+      }
       const pusher = PusherConnection.getInstance().getPusher();
-      pusher.send_event("startedTyping", action.payload);
+      pusher.send_event(PUSHER_CLIENT_EVENT.START_TYPING, {}, roomId);
     },
     stopTyping: (state, action: PayloadAction<string>) => {
       console.log("=========== STOP TYPING ===========\n", action.payload);
+      const roomId = action.payload;
+      if (!roomId) {
+        console.log("Room ID is null, returning");
+        return;
+      }
       const pusher = PusherConnection.getInstance().getPusher();
 
-      pusher.send_event("stoppedTyping", action.payload);
+      pusher.send_event(PUSHER_CLIENT_EVENT.STOP_TYPING, {}, roomId);
     },
     userStartedTyping: (state, action: PayloadAction<User>) => {
       console.log(
@@ -201,32 +215,17 @@ export const chatSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(joinRoom.pending, (state) => {
-      state.loading = true;
+      state.isLoadingRoom = true;
 
       console.log("Loading...");
     });
     builder.addCase(joinRoom.rejected, (state, action) => {
-      state.loading = false;
+      state.isLoadingRoom = false;
       console.log("ERROR joining room", action.error);
     });
     builder.addCase(joinRoom.fulfilled, (state, action) => {
-      const pusher = PusherConnection.getInstance().getPusher();
-
-      const publicAuthUser: PublicAuthUser = {
-        username: action.payload.authUser.username,
-        publicKey: action.payload.authUser.publicKey,
-      };
-      const handshakeInfo: RoomHandshake = {
-        roomId: action.payload.roomId,
-        user: publicAuthUser,
-      };
-
-      console.log("=========== JOINING ROOM... ===========");
-
-      console.log("pusher", pusher);
-      pusher.send_event("joinRoom", handshakeInfo);
-      state.roomId = action.payload.roomId;
-      state.user = action.payload.authUser;
+      console.log("=========== JOINED ROOM ===========");
+      state.room = action.payload.room;
     });
 
     builder.addCase(sendMessage.rejected, (state, action) => {
@@ -235,9 +234,17 @@ export const chatSlice = createSlice({
     builder.addCase(sendMessage.fulfilled, (state, action) => {
       const pusher = PusherConnection.getInstance().getPusher();
 
-      console.log("=========== SENDING MESSAGE ===========\n", action.payload);
+      console.log(
+        "=========== SENDING MESSAGE ===========\n",
+        action.payload,
+        state.room!.id
+      );
 
-      pusher.send_event("message", action.payload.encryptedMessages);
+      pusher.send_event(
+        PUSHER_CLIENT_EVENT.MESSAGE,
+        action.payload.encryptedMessages,
+        state.room!.id
+      );
 
       state.messages = [...state.messages, action.payload.message];
     });
@@ -246,7 +253,18 @@ export const chatSlice = createSlice({
       console.log("ERROR decrypting message", action.error);
     });
     builder.addCase(receivedMessage.fulfilled, (state, action) => {
-      state.messages = [...state.messages, action.payload.message];
+      if (action.payload) {
+        state.messages = [...state.messages, action.payload.message];
+      }
+    });
+    builder.addCase(login.fulfilled, (state, action) => {
+      state.authUser = action.payload;
+    });
+    builder.addCase(login.rejected, (state, action) => {
+      console.log("ERROR logging in", action.error);
+    });
+    builder.addCase(login.pending, (state) => {
+      console.log("Loading...");
     });
   },
 });
@@ -260,7 +278,6 @@ export const {
   userLeft,
   startTyping,
   stopTyping,
-  handshakeAcknowledge,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -5,6 +5,7 @@ export interface User {
   color?: string;
 }
 
+// TODO: Review usage and reduce if possible
 export interface PublicAuthUser {
   username: string;
   publicKey: string;
@@ -48,7 +49,7 @@ export interface UserEncryptedMessage {
    * Initialization Vector
    * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt
    */
-  iv: Uint8Array;
+  iv: string;
 }
 
 export interface RoomHandshake {

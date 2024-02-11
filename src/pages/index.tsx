@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useRouter} from "next/router";
-import {joinRoom} from "../redux/toolkit/features/chatSlice";
+import {joinRoom, login} from "../redux/toolkit/features/chatSlice";
 import {useAppDispatch} from "../redux/toolkit/store";
-import {PusherConnection} from "../io/connection";
 import {
   Box,
   Button,
@@ -18,23 +17,37 @@ import {
   Text,
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
-import {apiRoute} from "../utils/constants";
 
 const HomePage = () => {
   const router = useRouter();
   const [username, setUsername] = useState("");
-  const [roomId, setRoomId] = useState("");
+  // const [roomId, setRoomId] = useState("");
   const dispatch = useAppDispatch();
 
+  // const onClick: React.MouseEventHandler = (e) => {
+  //   dispatch(joinRoom(roomId))
+  //     .then((action) => {
+  //       if (action.payload) {
+  //         router.push("/chat");
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       alert("Error joining room");
+  //       console.log(err);
+  //     });
+  // };
+
+  //TODO: implement the login functionality and move joinroom to the chat page
+  //TODO: implement private routes that must have a user logged in to access
   const onClick: React.MouseEventHandler = (e) => {
-    dispatch(joinRoom({roomId, username}))
+    dispatch(login(username))
       .then((action) => {
         if (action.payload) {
           router.push("/chat");
         }
       })
       .catch((err) => {
-        alert("Error joining room");
+        alert("Error logging in");
         console.log(err);
       });
   };

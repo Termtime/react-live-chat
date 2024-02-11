@@ -19,29 +19,27 @@ import debounce from "lodash.debounce";
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
 
-  const {roomId, user: ownUser} = useAppSelector(
-    (state: RootState) => state.chat
-  );
+  const {room, me: ownUser} = useAppSelector((state: RootState) => state.chat);
   const dispatch = useAppDispatch();
 
   const stopTypingDebounced = useMemo(
-    () => debounce(() => dispatch(stopTyping(roomId!)), 3000),
-    [dispatch, roomId]
+    () => debounce(() => dispatch(stopTyping(room!.id)), 3000),
+    [dispatch, room]
   );
   const startTypingDebounced = useMemo(
     () =>
-      debounce(() => dispatch(startTyping(roomId!)), 3000, {
+      debounce(() => dispatch(startTyping(room!.id)), 3000, {
         leading: true,
         trailing: false,
       }),
-    [dispatch, roomId]
+    [dispatch, room]
   );
 
   const onSendMessage = useCallback(
     (e?: React.FormEvent) => {
       if (e) e.preventDefault();
       if (text.trim().length === 0) return;
-      if (ownUser && roomId) {
+      if (ownUser && room) {
         const message: Message = {
           body: text,
           user: {
@@ -53,25 +51,25 @@ export const MessageTextArea = () => {
         };
         setText("");
         stopTypingDebounced.flush();
-        dispatch(sendMessage({message, roomId}));
+        dispatch(sendMessage({message, roomId: room.id}));
       } else {
         throw new Error(
           "Cannot send message. Check your connection and make sure you are authenticated."
         );
       }
     },
-    [text, ownUser, roomId, stopTypingDebounced, dispatch]
+    [text, ownUser, room, stopTypingDebounced, dispatch]
   );
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
-      if (roomId) {
+      if (room) {
         startTypingDebounced();
         stopTypingDebounced();
       }
       setText(e.target.value);
     },
-    [roomId, startTypingDebounced, stopTypingDebounced]
+    [room, startTypingDebounced, stopTypingDebounced]
   );
 
   const handleKeyDown = useCallback(

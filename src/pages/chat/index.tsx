@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from "react";
-import {MessagesBox, MessageTextArea, UserList, ChatHeader} from "@/components";
+import {MessagesBox, MessageTextArea, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
 import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
 import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
@@ -9,10 +9,10 @@ import {css} from "@emotion/react";
 const ChatPage = () => {
   const router = useRouter();
   const {
-    roomId,
-    user: ownUser,
+    room: roomId,
+    authUser: ownUser,
     typingUsers,
-    loading,
+    isLoadingRoom: isLoadingroom,
   } = useAppSelector((state) => state.chat);
 
   useEffect(() => {
@@ -21,12 +21,12 @@ const ChatPage = () => {
       await router.push("/");
       dispatch(leaveRoom());
     };
-    if ((!roomId || !ownUser) && !loading) {
+    if ((!roomId || !ownUser) && !isLoadingroom) {
       console.log("roomId or username is not set");
       alert("roomId or username is not set");
       disconnect();
     }
-  }, [loading, ownUser, roomId, router]);
+  }, [isLoadingroom, ownUser, roomId, router]);
 
   const renderTypingUsers = useMemo(() => {
     let string: string | React.ReactElement = "";
@@ -59,7 +59,7 @@ const ChatPage = () => {
 
   return (
     <Flex css={chatAppStyles}>
-      <ChatHeader />
+      <ChatAppBar />
       <Flex flex={1} overflowY="auto">
         <UserList />
         <MessagesBox />

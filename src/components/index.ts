@@ -1,4 +1,4 @@
-export * from "./ChatHeader";
+export * from "./ChatAppBar";
 export * from "./EmojiButton";
 export * from "./MessagesBox";
 export * from "./MessageTextArea";

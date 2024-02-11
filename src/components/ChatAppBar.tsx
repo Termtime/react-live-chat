@@ -7,8 +7,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GroupIcon from "@mui/icons-material/Group";
 import {toggleUserList} from "../redux/toolkit/features/uiSlice";
 
-export const ChatHeader = () => {
-  const {roomId} = useAppSelector((state) => state.chat);
+export const ChatAppBar = () => {
+  const {room} = useAppSelector((state) => state.chat);
   const {isExpanded} = useAppSelector((state) => state.ui.userList);
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -64,7 +64,7 @@ export const ChatHeader = () => {
         <GroupIcon />
       </Flex>
       <Flex direction="column" css={titleWrapperStyles}>
-        <Text css={titleStyles}>Room: {roomId}</Text>
+        <Text css={titleStyles}>Room: {room?.name ?? ""}</Text>
       </Flex>
     </Flex>
   );

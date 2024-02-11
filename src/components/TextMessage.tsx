@@ -5,7 +5,7 @@ import {useAppSelector} from "../redux/toolkit/store";
 import {Message} from "../types";
 
 export const TextMessage = ({message}: {message: Message}) => {
-  const {user} = useAppSelector((state) => state.chat);
+  const {authUser: user} = useAppSelector((state) => state.chat);
   const messageBackgroundColor = message.user.color || "#31287e";
   const messageColor = Color(messageBackgroundColor).isLight()
     ? "black"

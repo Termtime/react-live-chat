@@ -3,7 +3,9 @@ import {Message} from "../types";
 
 /**
  * Encrypts a CypherKey using the public key of the recipient
+ *
  */
+// TODO: Review usage and remove if not needed
 export const encryptKey = async (key: CipherKey, publicKey: CipherKey) => {};
 export const encryptMessage = async (
   messageObj: Message,
@@ -56,14 +58,14 @@ export const encryptMessage = async (
   return {
     encryptedMessage: encryptedMessageString,
     encryptedSymetricKeyString,
-    initializationVector: iv,
+    initializationVector: Buffer.from(iv).toString("base64"),
   };
 };
 
 export const decryptMessage = async (
   ciphertext: string,
   ENCRYPTED_SYMETRIC_KEY: string,
-  INITIALIZATION_VECTOR: Uint8Array,
+  INITIALIZATION_VECTOR: string,
   PRIVATE_KEY: string
 ): Promise<Message> => {
   // Convert/Import the key from string to a CryptoKey
@@ -99,10 +101,11 @@ export const decryptMessage = async (
   // Decrypt the message using the imported Symetric CryptoKey
   // parse back into a JSON string, then convert it to a Message object
   const ciphertextBuffer = Buffer.from(ciphertext, "base64");
+
   const decryptedData = await window.crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: INITIALIZATION_VECTOR,
+      iv: Buffer.from(INITIALIZATION_VECTOR, "base64"),
       tagLength: 128, // Length of the authentication tag
     },
     symetricCryptoKey,
