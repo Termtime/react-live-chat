@@ -75,9 +75,9 @@ export const joinRoom = createAsyncThunk(
   "chat/joinRoom",
   async (roomId: string) => {
     const pusherConnection = PusherConnection.getInstance();
-    const room = await pusherConnection.connectToChannel(roomId);
+    const {room, myId} = await pusherConnection.connectToChannel(roomId);
 
-    return {room};
+    return {room, myId};
   }
 );
 
@@ -196,20 +196,29 @@ export const chatSlice = createSlice({
 
       pusher.send_event(PUSHER_CLIENT_EVENT.STOP_TYPING, {}, roomId);
     },
-    userStartedTyping: (state, action: PayloadAction<User>) => {
+    userStartedTyping: (state, action: PayloadAction<string>) => {
       console.log(
         "=========== USER STARTED TYPING ===========\n",
         action.payload
       );
-      state.typingUsers = [...state.typingUsers, action.payload];
+
+      const user = state.room!.users.find((u) => u.id === action.payload);
+
+      if (user === undefined) {
+        console.log("User not found, ignoring typing event");
+        return;
+      }
+
+      state.typingUsers = [...state.typingUsers, user];
     },
-    userStoppedTyping: (state, action: PayloadAction<User>) => {
+    userStoppedTyping: (state, action: PayloadAction<string>) => {
       console.log(
         "=========== USER STOPPED TYPING ===========\n",
         action.payload
       );
+
       state.typingUsers = state.typingUsers.filter(
-        (user) => user.id !== action.payload.id
+        (user) => user.id !== action.payload
       );
     },
   },
@@ -226,6 +235,7 @@ export const chatSlice = createSlice({
     builder.addCase(joinRoom.fulfilled, (state, action) => {
       console.log("=========== JOINED ROOM ===========");
       state.room = action.payload.room;
+      state.authUser!.id = action.payload.myId;
     });
 
     builder.addCase(sendMessage.rejected, (state, action) => {

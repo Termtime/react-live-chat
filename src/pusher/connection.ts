@@ -16,6 +16,11 @@ import {
   PUSHER_PRESSENCE_EVENT,
 } from "../types/events";
 
+interface ConnectResponse {
+  room: Room;
+  myId: string;
+}
+
 type PusherMember = {id: string; info: Omit<User, "id">};
 
 export interface InitializePusherParams {
@@ -78,11 +83,11 @@ export class PusherConnection {
     return PusherConnection.instance;
   }
 
-  public connectToChannel(roomName: string): Promise<Room> {
+  public connectToChannel(roomName: string): Promise<ConnectResponse> {
     const roomId = `presence-${roomName}`;
     const pressenceChannel = this.pusher.subscribe(roomId) as PresenceChannel;
 
-    const promise = new Promise<Room>((resolve, reject) => {
+    const promise = new Promise<ConnectResponse>((resolve, reject) => {
       // ON SUBSCRIPTION SUCCEEDED
       pressenceChannel.bind(
         PUSHER_EVENT.SUBSCRIPTION_SUCCEEDED,
@@ -144,17 +149,38 @@ export class PusherConnection {
           // USER STARTED TYPING
           pressenceChannel.bind(
             PUSHER_CLIENT_EVENT.START_TYPING,
-            (user: User) => dispatch(userStartedTyping(user))
+            (
+              data: any,
+              metadata: {
+                user_id: string;
+              }
+            ) => {
+              console.log(metadata.user_id);
+              dispatch(userStartedTyping(metadata.user_id));
+            }
           );
 
           // USER STOPPED TYPING
-          pressenceChannel.bind(PUSHER_CLIENT_EVENT.STOP_TYPING, (user: User) =>
-            dispatch(userStoppedTyping(user))
+          pressenceChannel.bind(
+            PUSHER_CLIENT_EVENT.STOP_TYPING,
+            (
+              data: any,
+              metadata: {
+                user_id: string;
+              }
+            ) => dispatch(userStoppedTyping(metadata.user_id))
           );
 
           // Get the list of `Pusher.Member` objects of the pressence channel
           // and parse them as `User` objects (Adapter pattern)
           const users: User[] = [];
+
+          const me: User = {
+            id: members.myID,
+            username: members.me.info.username,
+            publicKey: members.me.info.publicKey,
+            color: generateLinkedColor(members.me.info.username),
+          };
 
           members.each((member: {id: string; info: Omit<User, "id">}) => {
             const user: User = {
@@ -167,10 +193,21 @@ export class PusherConnection {
             users.push(user);
           });
 
+          console.log({
+            room: {
+              id: roomId,
+              name: roomName,
+              users: users,
+            },
+            myId: me.id,
+          });
           resolve({
-            id: roomId,
-            name: roomName,
-            users: users,
+            room: {
+              id: roomId,
+              name: roomName,
+              users: users,
+            },
+            myId: me.id,
           });
 
           return this.pusher;

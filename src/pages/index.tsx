@@ -109,20 +109,6 @@ const HomePage = () => {
             </InputGroup>
           </FormControl>
           <br />
-          <FormControl isRequired>
-            <InputGroup>
-              <InputLeftAddon>Room name:</InputLeftAddon>
-              <Input
-                type="text"
-                backgroundColor="white"
-                placeholder="Termtime's room"
-                value={roomId}
-                onInput={(e) => setRoomId((e.target as HTMLInputElement).value)}
-                required
-              />
-            </InputGroup>
-          </FormControl>
-          <br />
           <Button
             width="100%"
             type="submit"

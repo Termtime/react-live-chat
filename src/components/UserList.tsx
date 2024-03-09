@@ -4,7 +4,8 @@ import {useAppSelector} from "../redux/toolkit/store";
 import PersonIcon from "@mui/icons-material/Person";
 
 export const UserList = () => {
-  const {room, authUser: ownUser} = useAppSelector((state) => state.chat);
+  const {room, authUser} = useAppSelector((state) => state.chat);
+
   const {isExpanded} = useAppSelector((state) => state.ui.userList);
 
   const userListStyles = css`
@@ -53,7 +54,7 @@ export const UserList = () => {
           <Flex key={user.id} css={userStyles}>
             <PersonIcon />
             <Text margin={0}>
-              {user.username} {user.id === ownUser?.id && "(You)"}
+              {user.username} {user.id === authUser?.id && "(You)"}
             </Text>
           </Flex>
         ))}

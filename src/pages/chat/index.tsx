@@ -1,32 +1,52 @@
 import React, {useEffect, useMemo} from "react";
 import {MessagesBox, MessageTextArea, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
-import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
-import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
-import {Flex, Text} from "@chakra-ui/react";
+import {
+  useAppSelector,
+  getAppDispatch,
+  AppDispatch,
+} from "../../redux/toolkit/store";
+import {joinRoom, leaveRoom} from "../../redux/toolkit/features/chatSlice";
+import {
+  Button,
+  Flex,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+} from "@chakra-ui/react";
 import {css} from "@emotion/react";
+import {useDispatch} from "react-redux";
 
 const ChatPage = () => {
   const router = useRouter();
   const {
-    room: roomId,
+    room,
     authUser: ownUser,
     typingUsers,
-    isLoadingRoom: isLoadingroom,
+    isLoadingRoom,
   } = useAppSelector((state) => state.chat);
+
+  const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(!room);
+  const [roomIdInput, setRoomIdInput] = React.useState("");
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const disconnect = async () => {
-      const dispatch = getAppDispatch();
       await router.push("/");
       dispatch(leaveRoom());
     };
-    if ((!roomId || !ownUser) && !isLoadingroom) {
-      console.log("roomId or username is not set");
-      alert("roomId or username is not set");
+    if (!ownUser && !isLoadingRoom) {
+      console.log("User is not authenticated");
+      alert("You are not authenticated, please log in");
       disconnect();
     }
-  }, [isLoadingroom, ownUser, roomId, router]);
+  }, [dispatch, isLoadingRoom, ownUser, router]);
 
   const renderTypingUsers = useMemo(() => {
     let string: string | React.ReactElement = "";
@@ -56,9 +76,37 @@ const ChatPage = () => {
     padding: 1rem;
     height: 100vh;
   `;
+  const handleJoinRoom = async () => {
+    await dispatch(joinRoom(roomIdInput));
+    setNeedsToSelectRoom(false);
+    setRoomIdInput("");
+  };
 
   return (
     <Flex css={chatAppStyles}>
+      <Modal
+        onClose={() => setNeedsToSelectRoom(false)}
+        isOpen={needsToSelectRoom}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Select a room to join</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            test!
+            <Input
+              value={roomIdInput}
+              onChange={(e) => setRoomIdInput(e.target.value)}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={handleJoinRoom}>
+              Join room
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <ChatAppBar />
       <Flex flex={1} overflowY="auto">
         <UserList />

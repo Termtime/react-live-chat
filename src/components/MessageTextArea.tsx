@@ -19,7 +19,7 @@ import debounce from "lodash.debounce";
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
 
-  const {room, me: ownUser} = useAppSelector((state: RootState) => state.chat);
+  const {room, authUser} = useAppSelector((state: RootState) => state.chat);
   const dispatch = useAppDispatch();
 
   const stopTypingDebounced = useMemo(
@@ -35,17 +35,17 @@ export const MessageTextArea = () => {
     [dispatch, room]
   );
 
-  const onSendMessage = useCallback(
+  const handleSendMessage = useCallback(
     (e?: React.FormEvent) => {
       if (e) e.preventDefault();
       if (text.trim().length === 0) return;
-      if (ownUser && room) {
+      if (authUser && room) {
         const message: Message = {
           body: text,
           user: {
-            id: ownUser.id!,
-            username: ownUser?.username,
-            color: ownUser?.color,
+            id: authUser.id!,
+            username: authUser?.username,
+            color: authUser?.color,
           },
           time: new Date().toLocaleTimeString("en-US"),
         };
@@ -58,7 +58,7 @@ export const MessageTextArea = () => {
         );
       }
     },
-    [text, ownUser, room, stopTypingDebounced, dispatch]
+    [text, authUser, room, stopTypingDebounced, dispatch]
   );
 
   const handleChange = useCallback(
@@ -75,11 +75,11 @@ export const MessageTextArea = () => {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.keyCode === 13 && !e.shiftKey) {
-        onSendMessage();
+        handleSendMessage();
         if (e) e.preventDefault();
       }
     },
-    [onSendMessage]
+    [handleSendMessage]
   );
 
   const onEmojiSelected = useCallback<NonNullable<EmojiButtonProps["onClick"]>>(
@@ -105,7 +105,7 @@ export const MessageTextArea = () => {
     flex: 1;
   `;
   return (
-    <form onSubmit={onSendMessage}>
+    <form onSubmit={handleSendMessage}>
       <Flex css={formContainerStyles}>
         <EmojiButton onClick={onEmojiSelected} />
         <Textarea
