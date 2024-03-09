@@ -22,31 +22,20 @@ import {
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
 import {useDispatch} from "react-redux";
+import {useSession} from "next-auth/react";
 
 const ChatPage = () => {
   const router = useRouter();
-  const {
-    room,
-    authUser: ownUser,
-    typingUsers,
-    isLoadingRoom,
-  } = useAppSelector((state) => state.chat);
+  const {} = useSession({
+    required: true,
+    onUnauthenticated: () => router.push("/"),
+  });
+
+  const {room, typingUsers} = useAppSelector((state) => state.chat);
 
   const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(!room);
   const [roomIdInput, setRoomIdInput] = React.useState("");
   const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    const disconnect = async () => {
-      await router.push("/");
-      dispatch(leaveRoom());
-    };
-    if (!ownUser && !isLoadingRoom) {
-      console.log("User is not authenticated");
-      alert("You are not authenticated, please log in");
-      disconnect();
-    }
-  }, [dispatch, isLoadingRoom, ownUser, router]);
 
   const renderTypingUsers = useMemo(() => {
     let string: string | React.ReactElement = "";

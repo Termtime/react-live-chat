@@ -17,6 +17,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
+import {signIn} from "next-auth/react";
 
 const HomePage = () => {
   const router = useRouter();
@@ -40,6 +41,7 @@ const HomePage = () => {
   //TODO: implement the login functionality and move joinroom to the chat page
   //TODO: implement private routes that must have a user logged in to access
   const onClick: React.MouseEventHandler = (e) => {
+    signIn("auth0", undefined, {});
     dispatch(login(username))
       .then((action) => {
         if (action.payload) {
@@ -115,7 +117,7 @@ const HomePage = () => {
             colorScheme="blue"
             onClick={onClick}
           >
-            Join
+            Log in
           </Button>
         </Flex>
       </Flex>
