@@ -1,6 +1,5 @@
-import React, {useState} from "react";
+import React from "react";
 import {useRouter} from "next/router";
-import {joinRoom, login} from "../redux/toolkit/features/chatSlice";
 import {useAppDispatch} from "../redux/toolkit/store";
 import {
   Box,
@@ -8,50 +7,36 @@ import {
   Card,
   CardBody,
   Flex,
-  FormControl,
   Heading,
-  Input,
-  InputGroup,
-  InputLeftAddon,
   SimpleGrid,
   Text,
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
-import {signIn} from "next-auth/react";
+import {signIn, signOut, useSession} from "next-auth/react";
 
 const HomePage = () => {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  // const [roomId, setRoomId] = useState("");
-  const dispatch = useAppDispatch();
+  const {data, status} = useSession();
 
-  // const onClick: React.MouseEventHandler = (e) => {
-  //   dispatch(joinRoom(roomId))
-  //     .then((action) => {
-  //       if (action.payload) {
-  //         router.push("/chat");
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       alert("Error joining room");
-  //       console.log(err);
-  //     });
-  // };
-
+  console.log({data});
   //TODO: implement the login functionality and move joinroom to the chat page
   //TODO: implement private routes that must have a user logged in to access
   const onClick: React.MouseEventHandler = (e) => {
-    signIn("auth0", undefined, {});
-    dispatch(login(username))
-      .then((action) => {
-        if (action.payload) {
-          router.push("/chat");
+    if (status === "authenticated" && data?.user?.name) {
+      router.push("/chat");
+    }
+
+    if (status === "unauthenticated") {
+      signIn(
+        "auth0",
+        {callbackUrl: `${window.location.origin}/chat`},
+        {
+          connection: "google-oauth2",
         }
-      })
-      .catch((err) => {
-        alert("Error logging in");
-        console.log(err);
+      ).catch((error) => {
+        console.error("Error signing in", error);
       });
+    }
   };
 
   const homePageHeaderStyles = css`
@@ -84,42 +69,34 @@ const HomePage = () => {
     <Flex direction="column">
       <Flex css={homePageHeaderStyles}>
         <Heading as="h1" size="xl" textAlign="center" css={textStyles}>
-          Welcome to Live-chat!
+          Welcome to Live-chat, {data?.user?.name}!
         </Heading>
         <Heading as="h3" size="lg" textAlign="center" css={textStyles}>
           Join chat rooms, and talk to your friends!
         </Heading>
-        <Flex
-          marginTop={10}
-          direction="column"
-          alignItems="center"
-          alignSelf="center"
+        <Button
+          mt={5}
+          width="50%"
+          sx={{alignSelf: "center"}}
+          colorScheme="blue"
+          onClick={onClick}
+          type="button"
+          disabled={status === "loading"}
         >
-          <FormControl isRequired>
-            <InputGroup>
-              <InputLeftAddon>Username:</InputLeftAddon>
-              <Input
-                type="text"
-                backgroundColor="white"
-                value={username}
-                onInput={(e) =>
-                  setUsername((e.target as HTMLInputElement).value)
-                }
-                placeholder="Termtime"
-                required
-              />
-            </InputGroup>
-          </FormControl>
-          <br />
+          {status === "authenticated" ? "Start chatting" : "Login"}
+        </Button>
+        {status === "authenticated" && (
           <Button
-            width="100%"
-            type="submit"
-            colorScheme="blue"
-            onClick={onClick}
+            mt={5}
+            width="50%"
+            sx={{alignSelf: "center"}}
+            colorScheme="red"
+            onClick={() => signOut()}
+            type="button"
           >
-            Log in
+            Log out
           </Button>
-        </Flex>
+        )}
       </Flex>
       <SimpleGrid css={homePageBottomStyles} spacing={5} minChildWidth="300px">
         <Box>

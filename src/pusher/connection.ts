@@ -35,11 +35,8 @@ export class PusherConnection {
 
   private constructor() {}
 
-  private initializePusher(authUserInfo: PublicAuthUser) {
-    console.log(
-      "Initializing pusher connection as user",
-      authUserInfo.username
-    );
+  private initializePusher(publicKey: string) {
+    console.log("Initializing pusher connection");
 
     // Enable pusher logging - don't include this in production
     Pusher.logToConsole = process.env.NODE_ENV === "development";
@@ -57,19 +54,18 @@ export class PusherConnection {
       authEndpoint: "/api/pusher/user-auth",
       auth: {
         params: {
-          username: authUserInfo.username,
-          publicKey: authUserInfo.publicKey,
+          publicKey: publicKey,
         },
       },
     });
   }
 
-  public static setup(authUserInfo: PublicAuthUser) {
-    if (!PusherConnection.instance && authUserInfo) {
-      console.log("Initializing pusher instance with info:", authUserInfo);
+  public static setup(publicKey: string) {
+    if (!PusherConnection.instance && publicKey) {
+      console.log("Initializing pusher instance with info:", publicKey);
       // Initialize the Singleton instance
       PusherConnection.instance = new PusherConnection();
-      PusherConnection.instance.initializePusher(authUserInfo);
+      PusherConnection.instance.initializePusher(publicKey);
       return PusherConnection.instance;
     }
   }

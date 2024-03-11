@@ -6,7 +6,7 @@ import {
   getAppDispatch,
   AppDispatch,
 } from "../../redux/toolkit/store";
-import {joinRoom, leaveRoom} from "../../redux/toolkit/features/chatSlice";
+import {joinRoom, login} from "../../redux/toolkit/features/chatSlice";
 import {
   Button,
   Flex,
@@ -24,14 +24,22 @@ import {css} from "@emotion/react";
 import {useDispatch} from "react-redux";
 import {useSession} from "next-auth/react";
 
+const chatAppStyles = css`
+  display: flex;
+  background-color: #1c2224;
+  flex-direction: column;
+  padding: 1rem;
+  height: 100vh;
+`;
+
 const ChatPage = () => {
   const router = useRouter();
-  const {} = useSession({
+  const {data} = useSession({
     required: true,
     onUnauthenticated: () => router.push("/"),
   });
 
-  const {room, typingUsers} = useAppSelector((state) => state.chat);
+  const {room, typingUsers, authUser} = useAppSelector((state) => state.chat);
 
   const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(!room);
   const [roomIdInput, setRoomIdInput] = React.useState("");
@@ -58,24 +66,31 @@ const ChatPage = () => {
     return string;
   }, [typingUsers]);
 
-  const chatAppStyles = css`
-    display: flex;
-    background-color: #1c2224;
-    flex-direction: column;
-    padding: 1rem;
-    height: 100vh;
-  `;
+  useEffect(() => {
+    console.log(data);
+    if (data?.user?.name) {
+      dispatch(login(data.user?.name));
+    }
+  }, [data]);
+
   const handleJoinRoom = async () => {
     await dispatch(joinRoom(roomIdInput));
     setNeedsToSelectRoom(false);
     setRoomIdInput("");
   };
 
+  if (!authUser)
+    return (
+      <Flex css={chatAppStyles}>
+        <Text color="white">Loading...</Text>
+      </Flex>
+    );
+
   return (
     <Flex css={chatAppStyles}>
       <Modal
         onClose={() => setNeedsToSelectRoom(false)}
-        isOpen={needsToSelectRoom}
+        isOpen={needsToSelectRoom && !!authUser}
       >
         <ModalOverlay />
         <ModalContent>

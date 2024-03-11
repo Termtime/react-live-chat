@@ -60,12 +60,7 @@ export const login = createAsyncThunk(
       symetricKey,
     };
 
-    const myPublicIdentity: PublicAuthUser = {
-      username,
-      publicKey,
-    };
-
-    PusherConnection.setup(myPublicIdentity);
+    PusherConnection.setup(publicKey);
 
     return authUser;
   }
