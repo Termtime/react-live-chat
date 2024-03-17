@@ -11,6 +11,7 @@ import {decryptMessage, encryptMessage, generateKeys} from "../../../utils";
 import {PusherConnection} from "../../../pusher/connection";
 import {RootState} from "../store";
 import {PUSHER_CLIENT_EVENT} from "../../../types/events";
+import {signOut} from "next-auth/react";
 
 export interface Room {
   id: string;
@@ -154,10 +155,10 @@ export const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    leaveRoom: (state) => {
+    logout: (state) => {
       console.log("=========== LEAVING ROOM ===========", state.room!.id);
-      PusherConnection.getInstance().disconnect(state.room!.id);
-
+      PusherConnection.getInstance().disconnect();
+      signOut();
       state = initialState;
     },
     userJoined: (state, action: PayloadAction<User>) => {
@@ -276,7 +277,7 @@ export const chatSlice = createSlice({
 
 // Action creators are generated for each case reducer function
 export const {
-  leaveRoom,
+  logout,
   userStartedTyping,
   userStoppedTyping,
   userJoined,

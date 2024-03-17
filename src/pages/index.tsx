@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useCallback, useEffect} from "react";
 import {useRouter} from "next/router";
 import {useAppDispatch} from "../redux/toolkit/store";
 import {
@@ -14,6 +14,32 @@ import {
 import {css} from "@emotion/react";
 import {signIn, signOut, useSession} from "next-auth/react";
 
+const homePageHeaderStyles = css`
+  box-shadow: inset 0 0 100vw 5px rgba(0, 0, 0, 1);
+  padding: 10vh;
+  min-height: 45vh;
+  margin: 0;
+  background-image: url("/resources/img/nature-background.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  flex-direction: column;
+`;
+
+const textStyles = css`
+  color: white;
+  text-align: center;
+`;
+
+const homePageBottomStyles = css`
+  background: #c94b4b;
+  background: -webkit-linear-gradient(to top, #4b134f, #c94b4b);
+  background: linear-gradient(to top, #4b134f, #c94b4b);
+  color: white;
+  padding: 2vw;
+  min-height: 55vh;
+`;
+
 const HomePage = () => {
   const router = useRouter();
   const {data, status} = useSession();
@@ -21,55 +47,38 @@ const HomePage = () => {
   console.log({data});
   //TODO: implement the login functionality and move joinroom to the chat page
   //TODO: implement private routes that must have a user logged in to access
-  const onClick: React.MouseEventHandler = (e) => {
+  const onClick: React.MouseEventHandler = useCallback(
+    (e) => {
+      if (status === "authenticated" && data?.user?.name) {
+        router.push("/chat");
+      }
+
+      if (status === "unauthenticated") {
+        signIn(
+          "auth0",
+          {callbackUrl: `${window.location.origin}/chat`},
+          {
+            connection: "google-oauth2",
+          }
+        ).catch((error) => {
+          console.error("Error signing in", error);
+        });
+      }
+    },
+    [status, data?.user?.name, router]
+  );
+
+  useEffect(() => {
     if (status === "authenticated" && data?.user?.name) {
       router.push("/chat");
     }
-
-    if (status === "unauthenticated") {
-      signIn(
-        "auth0",
-        {callbackUrl: `${window.location.origin}/chat`},
-        {
-          connection: "google-oauth2",
-        }
-      ).catch((error) => {
-        console.error("Error signing in", error);
-      });
-    }
-  };
-
-  const homePageHeaderStyles = css`
-    box-shadow: inset 0 0 100vw 5px rgba(0, 0, 0, 1);
-    padding: 10vh;
-    min-height: 45vh;
-    margin: 0;
-    background-image: url("/resources/img/nature-background.jpg");
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    flex-direction: column;
-  `;
-
-  const textStyles = css`
-    color: white;
-    text-align: center;
-  `;
-
-  const homePageBottomStyles = css`
-    background: #c94b4b;
-    background: -webkit-linear-gradient(to top, #4b134f, #c94b4b);
-    background: linear-gradient(to top, #4b134f, #c94b4b);
-    color: white;
-    padding: 2vw;
-    min-height: 55vh;
-  `;
+  }, [status, data?.user?.name, router]);
 
   return (
     <Flex direction="column">
       <Flex css={homePageHeaderStyles}>
         <Heading as="h1" size="xl" textAlign="center" css={textStyles}>
-          Welcome to Live-chat, {data?.user?.name}!
+          Welcome to Live-chat {`,${data?.user?.name}`}!
         </Heading>
         <Heading as="h3" size="lg" textAlign="center" css={textStyles}>
           Join chat rooms, and talk to your friends!

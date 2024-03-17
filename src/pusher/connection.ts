@@ -219,8 +219,8 @@ export class PusherConnection {
     return promise;
   }
 
-  public disconnect(roomId: string) {
-    this.pusher.unsubscribe(`presence-${roomId}`);
+  public disconnect() {
+    this.pusher.disconnect();
   }
 
   public getPusher() {

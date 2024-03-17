@@ -1,12 +1,8 @@
 import React, {useEffect, useMemo} from "react";
 import {MessagesBox, MessageTextArea, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
-import {
-  useAppSelector,
-  getAppDispatch,
-  AppDispatch,
-} from "../../redux/toolkit/store";
-import {joinRoom, login} from "../../redux/toolkit/features/chatSlice";
+import {useAppSelector, AppDispatch} from "../../redux/toolkit/store";
+import {joinRoom, login, logout} from "../../redux/toolkit/features/chatSlice";
 import {
   Button,
   Flex,
@@ -91,11 +87,12 @@ const ChatPage = () => {
       <Modal
         onClose={() => setNeedsToSelectRoom(false)}
         isOpen={needsToSelectRoom && !!authUser}
+        closeOnEsc={false}
+        closeOnOverlayClick={false}
       >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Select a room to join</ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
             test!
             <Input
@@ -113,8 +110,8 @@ const ChatPage = () => {
       </Modal>
       <ChatAppBar />
       <Flex flex={1} overflowY="auto">
-        <UserList />
         <MessagesBox />
+        <UserList />
       </Flex>
       <Flex direction="column">
         <Text color="white">{renderTypingUsers}</Text>
