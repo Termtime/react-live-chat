@@ -91,17 +91,17 @@ export class PusherConnection {
           const dispatch = getAppDispatch();
 
           // TODO: Move this functionality to the application layer
-          const onReceivedMessage = (message: UserEncryptedMessage[]) => {
-            if (typeof window !== "undefined") {
-              dispatch(receivedMessage(message));
-              document
-                .querySelector("#messages")
-                ?.scrollTo(
-                  0,
-                  document?.querySelector("#messages")?.scrollHeight || 0
-                );
-            }
-          };
+          // const onReceivedMessage = (message: UserEncryptedMessage[], roomId) => {
+          //   if (typeof window !== "undefined") {
+
+          //     document
+          //       .querySelector("#messages")
+          //       ?.scrollTo(
+          //         0,
+          //         document?.querySelector("#messages")?.scrollHeight || 0
+          //       );
+          //   }
+          // };
 
           console.log("[PUSHER] Configuring pusher events");
 
@@ -116,7 +116,12 @@ export class PusherConnection {
                 color: generateLinkedColor(member.info.username),
               };
 
-              dispatch(userJoined(user));
+              dispatch(
+                userJoined({
+                  user,
+                  roomId,
+                })
+              );
             }
           );
 
@@ -131,7 +136,12 @@ export class PusherConnection {
                 color: generateLinkedColor(member.info.username),
               };
 
-              dispatch(userLeft(user));
+              dispatch(
+                userLeft({
+                  user,
+                  roomId,
+                })
+              );
             }
           );
 
@@ -139,7 +149,8 @@ export class PusherConnection {
           // TODO: Show a clickable bubble to take to the last message instead of forcing the scroll.
           pressenceChannel.bind(
             PUSHER_CLIENT_EVENT.MESSAGE,
-            (message: UserEncryptedMessage[]) => onReceivedMessage(message)
+            (message: UserEncryptedMessage[]) =>
+              dispatch(receivedMessage(message))
           );
 
           // USER STARTED TYPING
@@ -152,7 +163,12 @@ export class PusherConnection {
               }
             ) => {
               console.log(metadata.user_id);
-              dispatch(userStartedTyping(metadata.user_id));
+              dispatch(
+                userStartedTyping({
+                  userId: metadata.user_id,
+                  roomId,
+                })
+              );
             }
           );
 
@@ -164,7 +180,13 @@ export class PusherConnection {
               metadata: {
                 user_id: string;
               }
-            ) => dispatch(userStoppedTyping(metadata.user_id))
+            ) =>
+              dispatch(
+                userStoppedTyping({
+                  userId: metadata.user_id,
+                  roomId,
+                })
+              )
           );
 
           // Get the list of `Pusher.Member` objects of the pressence channel

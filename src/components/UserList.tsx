@@ -4,7 +4,9 @@ import {useAppSelector} from "../redux/toolkit/store";
 import PersonIcon from "@mui/icons-material/Person";
 
 export const UserList = () => {
-  const {room, authUser} = useAppSelector((state) => state.chat);
+  const {rooms, currentRoomId, authUser} = useAppSelector(
+    (state) => state.chat
+  );
 
   const {isExpanded} = useAppSelector((state) => state.ui.userList);
 
@@ -41,16 +43,17 @@ export const UserList = () => {
     word-break: break-all;
   `;
 
-  if (!room) return null;
+  const currentRoom = rooms.find((room) => room.id === currentRoomId);
+  if (!currentRoom) return null;
 
   return (
     <Flex css={userListStyles}>
       <Text>
-        {`${room.users.length === 1 ? "User" : "Users"}`} online:{" "}
-        {room.users.length}
+        {`${currentRoom.users.length === 1 ? "User" : "Users"}`} online:{" "}
+        {currentRoom.users.length}
       </Text>
       <Flex direction="column" alignItems="flex-start" width="100%">
-        {room.users.map((user) => (
+        {currentRoom.users.map((user) => (
           <Flex key={user.id} css={userStyles}>
             <PersonIcon />
             <Text margin={0}>

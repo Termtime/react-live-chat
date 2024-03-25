@@ -13,6 +13,19 @@ import {RootState} from "../store";
 import {PUSHER_CLIENT_EVENT} from "../../../types/events";
 import {signOut} from "next-auth/react";
 
+export interface RoomV2 {
+  id: string;
+  name: string;
+  users: User[];
+  messages: Message[];
+  lastMessage: Message | null;
+  typingUsers: User[];
+  isLoading: boolean;
+}
+// TODO: finish removal of the interface
+/**
+ * @deprecated Use RoomV2 instead
+ */
 export interface Room {
   id: string;
   name: string;
@@ -27,10 +40,13 @@ export interface ChatState {
    * The messages in the current room
    */
   messages: Message[];
+
   /**
-   * The room that the user is currently in
+   * The rooms that the user is currently in
    */
-  room: Room | null;
+  rooms: RoomV2[];
+
+  currentRoomId: string | null;
   /**
    * Users that are currently typing
    */
@@ -44,7 +60,8 @@ export interface ChatState {
 const initialState: ChatState = {
   authUser: null,
   messages: [],
-  room: null,
+  currentRoomId: null,
+  rooms: [],
   typingUsers: [],
   isLoadingRoom: false,
 };
@@ -79,19 +96,33 @@ export const joinRoom = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   "chat/sendMessage",
-  async (payload: {message: Message; roomId: string}, thunkAPI) => {
+  async (payload: Message, thunkAPI) => {
     console.log("=========== SEND MESSAGE ===========\n", payload);
     const state = thunkAPI.getState() as RootState;
     const {authUser} = state.chat;
-    const {message, roomId} = payload;
+    const message = payload;
 
-    if (!authUser || !roomId) {
-      throw new Error("User not logged in or Room ID not passed");
+    if (!authUser) {
+      throw new Error("User not logged in");
     }
 
     const encryptedMessages = [] as UserEncryptedMessage[];
 
-    const channelMembers = state.chat.room!.users.filter(
+    const roomId = state.chat.currentRoomId;
+    if (!roomId) {
+      throw new Error("RoomId not found");
+    }
+
+    const currentRoom = state.chat.rooms.find((r) => r.id === roomId);
+    if (!currentRoom) {
+      throw new Error("Room not found");
+    }
+
+    console.log("currentRoom", currentRoom);
+    console.log("currentRoomUsers", currentRoom.users);
+    console.log("authUser", authUser);
+
+    const channelMembers = currentRoom.users.filter(
       (u) => u.id !== authUser.id
     );
 
@@ -116,7 +147,7 @@ export const sendMessage = createAsyncThunk(
       }
     }
 
-    return {message, encryptedMessages};
+    return {message, encryptedMessages, roomId};
   }
 );
 
@@ -156,24 +187,44 @@ export const chatSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      console.log("=========== LEAVING ROOM ===========", state.room!.id);
+      console.log("=========== LEAVING ROOMS ===========", state.rooms);
       PusherConnection.getInstance().disconnect();
       signOut();
       state = initialState;
     },
-    userJoined: (state, action: PayloadAction<User>) => {
+    userJoined: (
+      state,
+      action: PayloadAction<{user: User; roomId: string}>
+    ) => {
       console.log("=========== USER JOINED ===========\n", action.payload);
-      state.room!.users = [...state.room!.users, action.payload];
+
+      // Rooms V2
+      state.rooms = state.rooms.map((r) => {
+        if (r.id === action.payload.roomId) {
+          r.users = [...r.users, action.payload.user];
+        }
+        return r;
+      });
     },
-    userLeft: (state, action: PayloadAction<User>) => {
+    userLeft: (state, action: PayloadAction<{user: User; roomId: string}>) => {
       console.log("=========== USER LEFT ===========\n", action.payload);
-      state.room!.users = state.room!.users.filter(
-        (user) => user.id !== action.payload.id
-      );
+
+      // Rooms V2
+      state.rooms = state.rooms.map((r) => {
+        if (r.id === action.payload.roomId) {
+          r.users = r.users.filter(
+            (user) => user.id !== action.payload.user.id
+          );
+        }
+        return r;
+      });
     },
-    startTyping: (state, action: PayloadAction<string>) => {
-      console.log("=========== START TYPING ===========\n", action.payload);
-      const roomId = action.payload;
+    startTyping: (state) => {
+      console.log(
+        "=========== START TYPING ===========\n",
+        state.currentRoomId
+      );
+      const roomId = state.currentRoomId;
       if (!roomId) {
         console.log("Room ID is null, returning");
         return;
@@ -181,9 +232,9 @@ export const chatSlice = createSlice({
       const pusher = PusherConnection.getInstance().getPusher();
       pusher.send_event(PUSHER_CLIENT_EVENT.START_TYPING, {}, roomId);
     },
-    stopTyping: (state, action: PayloadAction<string>) => {
-      console.log("=========== STOP TYPING ===========\n", action.payload);
-      const roomId = action.payload;
+    stopTyping: (state) => {
+      console.log("=========== STOP TYPING ===========\n", state.currentRoomId);
+      const roomId = state.currentRoomId;
       if (!roomId) {
         console.log("Room ID is null, returning");
         return;
@@ -192,30 +243,75 @@ export const chatSlice = createSlice({
 
       pusher.send_event(PUSHER_CLIENT_EVENT.STOP_TYPING, {}, roomId);
     },
-    userStartedTyping: (state, action: PayloadAction<string>) => {
+    userStartedTyping: (
+      state,
+      action: PayloadAction<{
+        userId: string;
+        roomId: string;
+      }>
+    ) => {
       console.log(
         "=========== USER STARTED TYPING ===========\n",
         action.payload
       );
 
-      const user = state.room!.users.find((u) => u.id === action.payload);
+      // Rooms V2
 
-      if (user === undefined) {
-        console.log("User not found, ignoring typing event");
+      const roomFromRooms = state.rooms.find(
+        (r) => r.id === action.payload.roomId
+      );
+      const userInRoom = roomFromRooms?.users.find(
+        (u) => u.id === action.payload.userId
+      );
+
+      if (userInRoom === undefined) {
+        console.log("[V2] User not in room, ignoring typing event");
         return;
       }
-
-      state.typingUsers = [...state.typingUsers, user];
+      state.rooms = state.rooms.map((r) => {
+        if (r.id === action.payload.roomId) {
+          r.typingUsers = [...r.typingUsers, userInRoom];
+        }
+        return r;
+      });
     },
-    userStoppedTyping: (state, action: PayloadAction<string>) => {
+    userStoppedTyping: (
+      state,
+      action: PayloadAction<{
+        userId: string;
+        roomId: string;
+      }>
+    ) => {
       console.log(
         "=========== USER STOPPED TYPING ===========\n",
         action.payload
       );
 
       state.typingUsers = state.typingUsers.filter(
-        (user) => user.id !== action.payload
+        (user) => user.id !== action.payload.userId
       );
+
+      // Rooms V2
+      const roomFromRooms = state.rooms.find(
+        (r) => r.id === action.payload.roomId
+      );
+      const userInRoom = roomFromRooms?.users.find(
+        (u) => u.id === action.payload.userId
+      );
+
+      if (userInRoom === undefined) {
+        console.log("[V2] User not in room, ignoring typing event");
+        return;
+      }
+
+      state.rooms = state.rooms.map((r) => {
+        if (r.id === action.payload.roomId) {
+          r.typingUsers = r.typingUsers.filter(
+            (user) => user.id !== action.payload.userId
+          );
+        }
+        return r;
+      });
     },
   },
   extraReducers: (builder) => {
@@ -229,9 +325,24 @@ export const chatSlice = createSlice({
       console.log("ERROR joining room", action.error);
     });
     builder.addCase(joinRoom.fulfilled, (state, action) => {
-      console.log("=========== JOINED ROOM ===========");
-      state.room = action.payload.room;
+      console.log("=========== JOINED ROOM ===========", action.payload.room);
+
+      // Rooms V2
+      state.rooms = [
+        ...state.rooms,
+        {
+          id: action.payload.room.id,
+          name: action.payload.room.name,
+          users: action.payload.room.users,
+          messages: [],
+          lastMessage: null,
+          typingUsers: [],
+          isLoading: false,
+        },
+      ];
+
       state.authUser!.id = action.payload.myId;
+      state.currentRoomId = action.payload.room.id;
     });
 
     builder.addCase(sendMessage.rejected, (state, action) => {
@@ -240,19 +351,26 @@ export const chatSlice = createSlice({
     builder.addCase(sendMessage.fulfilled, (state, action) => {
       const pusher = PusherConnection.getInstance().getPusher();
 
-      console.log(
-        "=========== SENDING MESSAGE ===========\n",
-        action.payload,
-        state.room!.id
-      );
+      console.log("=========== SENDING MESSAGE ===========\n", action.payload);
 
       pusher.send_event(
         PUSHER_CLIENT_EVENT.MESSAGE,
         action.payload.encryptedMessages,
-        state.room!.id
+        action.payload.roomId
       );
 
       state.messages = [...state.messages, action.payload.message];
+
+      // Rooms V2
+      const roomId = action.payload.roomId;
+
+      state.rooms = state.rooms.map((r) => {
+        if (r.id === roomId) {
+          r.messages = [...r.messages, action.payload.message];
+          r.lastMessage = action.payload.message;
+        }
+        return r;
+      });
     });
 
     builder.addCase(receivedMessage.rejected, (state, action) => {
@@ -261,9 +379,19 @@ export const chatSlice = createSlice({
     builder.addCase(receivedMessage.fulfilled, (state, action) => {
       if (action.payload) {
         state.messages = [...state.messages, action.payload.message];
+
+        // Rooms V2
+        state.rooms = state.rooms.map((r) => {
+          if (r.id === action.payload?.roomId) {
+            r.messages = [...r.messages, action.payload.message];
+            r.lastMessage = action.payload.message;
+          }
+          return r;
+        });
       }
     });
     builder.addCase(login.fulfilled, (state, action) => {
+      console.log("Login sucessful", action.payload);
       state.authUser = action.payload;
     });
     builder.addCase(login.rejected, (state, action) => {

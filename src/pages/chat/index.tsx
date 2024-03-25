@@ -35,9 +35,11 @@ const ChatPage = () => {
     onUnauthenticated: () => router.push("/"),
   });
 
-  const {room, typingUsers, authUser} = useAppSelector((state) => state.chat);
+  const {rooms, typingUsers, authUser} = useAppSelector((state) => state.chat);
 
-  const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(!room);
+  const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(
+    rooms.length <= 0
+  );
   const [roomIdInput, setRoomIdInput] = React.useState("");
   const dispatch = useDispatch<AppDispatch>();
 

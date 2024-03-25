@@ -2,15 +2,23 @@ import {NextApiRequest, NextApiResponse} from "next";
 import Pusher from "pusher";
 import {initializeServerPusher} from "../../../utils";
 import {authOptions} from "../auth/[...nextauth]";
-import {getServerSession} from "next-auth";
+import {Session, getServerSession} from "next-auth";
+
+interface CustomServerSession extends Session {
+  sub: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Pusher.ChannelAuthResponse>
+  res: NextApiResponse<Pusher.ChannelAuthResponse | string>
 ) {
   console.log("USER AUTH", req.body);
 
-  const session = await getServerSession(req, res, authOptions);
+  const session = (await getServerSession(
+    req,
+    res,
+    authOptions
+  )) as CustomServerSession;
 
   console.log("Session", session);
   if (session && session.user) {

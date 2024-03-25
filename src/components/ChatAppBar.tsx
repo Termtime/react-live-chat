@@ -36,10 +36,11 @@ const ghostButtonStyles = css`
 `;
 
 export const ChatAppBar = () => {
-  const {room} = useAppSelector((state) => state.chat);
+  const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
   const {isExpanded} = useAppSelector((state) => state.ui.userList);
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
   const disconnect = async () => {
     await router.push("/");
@@ -63,7 +64,7 @@ export const ChatAppBar = () => {
         </Button>
       </Tooltip>
       <Flex direction="column" css={titleWrapperStyles}>
-        <Text css={titleStyles}>Room: {room?.name ?? ""}</Text>
+        <Text css={titleStyles}>Room: {currentRoom?.name ?? ""}</Text>
       </Flex>
       <Flex
         style={{
