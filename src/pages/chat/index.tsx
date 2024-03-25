@@ -30,7 +30,7 @@ const chatAppStyles = css`
 
 const ChatPage = () => {
   const router = useRouter();
-  const {data} = useSession({
+  const {data, status} = useSession({
     required: true,
     onUnauthenticated: () => router.push("/"),
   });
@@ -64,10 +64,10 @@ const ChatPage = () => {
 
   useEffect(() => {
     console.log(data);
-    if (data?.user?.name) {
+    if (status === "authenticated" && data.user?.name) {
       dispatch(login(data.user?.name));
     }
-  }, [data]);
+  }, [data?.user?.name, status]);
 
   const handleJoinRoom = async () => {
     await dispatch(joinRoom(roomIdInput));
