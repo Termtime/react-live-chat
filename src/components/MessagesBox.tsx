@@ -4,7 +4,8 @@ import {useAppSelector} from "../redux/toolkit/store";
 import {TextMessage} from "./TextMessage";
 
 export const MessagesBox = () => {
-  const {messages} = useAppSelector((state) => state.chat);
+  const {currentRoomId, rooms} = useAppSelector((state) => state.chat);
+  const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
   const messagesBoxStyles = css`
     background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
@@ -13,7 +14,7 @@ export const MessagesBox = () => {
     background-size: cover;
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 2;
     padding: 10px;
     border-bottom-right-radius: 1em;
     overflow-y: auto;
@@ -36,7 +37,7 @@ export const MessagesBox = () => {
 
   return (
     <Flex css={messagesBoxStyles}>
-      {messages.map((message) => (
+      {currentRoom?.messages.map((message) => (
         <TextMessage
           key={`${message.user.id}-${message.time}`}
           message={message}

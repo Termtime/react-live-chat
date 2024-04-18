@@ -9,7 +9,6 @@ import {
   Input,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -19,6 +18,8 @@ import {
 import {css} from "@emotion/react";
 import {useDispatch} from "react-redux";
 import {useSession} from "next-auth/react";
+import {RoomList} from "../../components/RoomList";
+import {setNewRoomModalOpen} from "../../redux/toolkit/features/uiSlice";
 
 const chatAppStyles = css`
   display: flex;
@@ -37,9 +38,10 @@ const ChatPage = () => {
 
   const {rooms, typingUsers, authUser} = useAppSelector((state) => state.chat);
 
-  const [needsToSelectRoom, setNeedsToSelectRoom] = React.useState(
-    rooms.length <= 0
+  const {isOpen: isNewRoomModalOpen} = useAppSelector(
+    (state) => state.ui.newRoomModal
   );
+
   const [roomIdInput, setRoomIdInput] = React.useState("");
   const dispatch = useDispatch<AppDispatch>();
 
@@ -73,22 +75,23 @@ const ChatPage = () => {
 
   const handleJoinRoom = async () => {
     await dispatch(joinRoom(roomIdInput));
-    setNeedsToSelectRoom(false);
+    dispatch(setNewRoomModalOpen(false));
     setRoomIdInput("");
   };
 
-  if (!authUser)
+  if (!authUser) {
     return (
       <Flex css={chatAppStyles}>
         <Text color="white">Loading...</Text>
       </Flex>
     );
+  }
 
   return (
     <Flex css={chatAppStyles}>
       <Modal
-        onClose={() => setNeedsToSelectRoom(false)}
-        isOpen={needsToSelectRoom && !!authUser}
+        onClose={() => dispatch(setNewRoomModalOpen(false))}
+        isOpen={isNewRoomModalOpen && !!authUser}
         closeOnEsc={false}
         closeOnOverlayClick={false}
       >
@@ -100,6 +103,7 @@ const ChatPage = () => {
             <Input
               value={roomIdInput}
               onChange={(e) => setRoomIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleJoinRoom()}
             />
           </ModalBody>
 
@@ -112,6 +116,7 @@ const ChatPage = () => {
       </Modal>
       <ChatAppBar />
       <Flex flex={1} overflowY="auto">
+        <RoomList />
         <MessagesBox />
         <UserList />
       </Flex>

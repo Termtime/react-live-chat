@@ -3,10 +3,14 @@ import {css} from "@emotion/react";
 import {useRouter} from "next/router";
 import {useAppSelector, useAppDispatch} from "../redux/toolkit/store";
 import GroupIcon from "@mui/icons-material/Group";
-import {toggleUserList} from "../redux/toolkit/features/uiSlice";
+import {
+  setChatListOpen,
+  setNewRoomModalOpen,
+  toggleUserList,
+} from "../redux/toolkit/features/uiSlice";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {logout} from "../redux/toolkit/features/chatSlice";
-import {AddComment} from "@mui/icons-material";
+import {AddComment, ChevronLeft, Menu} from "@mui/icons-material";
 
 const headerStyles = css`
   border-top-left-radius: 0.5rem;
@@ -25,8 +29,9 @@ const titleStyles = css`
 `;
 
 const titleWrapperStyles = css`
+  justify-content: center;
   align-items: center;
-  flex: 1;
+  flex: 2;
 `;
 
 const ghostButtonStyles = css`
@@ -37,7 +42,13 @@ const ghostButtonStyles = css`
 
 export const ChatAppBar = () => {
   const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
-  const {isExpanded} = useAppSelector((state) => state.ui.userList);
+  const {isExpanded: isUserListExpanded} = useAppSelector(
+    (state) => state.ui.userList
+  );
+  const {isExpanded: isChatListExpanded} = useAppSelector(
+    (state) => state.ui.chatList
+  );
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
@@ -48,22 +59,46 @@ export const ChatAppBar = () => {
   };
 
   const userListButtonStyles = css`
-    background-color: ${isExpanded ? "#b33b3b" : "transparent"};
+    background-color: ${isUserListExpanded ? "#b33b3b" : "transparent"};
     ${ghostButtonStyles}
   `;
 
   return (
     <Flex css={headerStyles}>
-      <Tooltip label="Add new room">
-        <Button variant="solid" css={ghostButtonStyles} colorScheme="green">
-          <AddComment
-            sx={{
-              transform: "scale(-1,1)",
-            }}
-          />
+      <Flex
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        maxWidth="350px"
+        flex={1}
+      >
+        <Button
+          variant="solid"
+          css={ghostButtonStyles}
+          colorScheme="green"
+          onClick={() => {
+            dispatch(setChatListOpen(!isChatListExpanded));
+          }}
+        >
+          {isChatListExpanded ? <ChevronLeft /> : <Menu />}
         </Button>
-      </Tooltip>
-      <Flex direction="column" css={titleWrapperStyles}>
+        <Text>Rooms</Text>
+        <Tooltip label="Add new room">
+          <Button
+            variant="solid"
+            css={ghostButtonStyles}
+            colorScheme="green"
+            onClick={() => dispatch(setNewRoomModalOpen(true))}
+          >
+            <AddComment
+              sx={{
+                transform: "scale(-1,1)",
+              }}
+            />
+          </Button>
+        </Tooltip>
+      </Flex>
+      <Flex direction="row" css={titleWrapperStyles}>
         <Text css={titleStyles}>Room: {currentRoom?.name ?? ""}</Text>
       </Flex>
       <Flex

@@ -313,6 +313,9 @@ export const chatSlice = createSlice({
         return r;
       });
     },
+    setCurrentRoomId: (state, action: PayloadAction<string>) => {
+      state.currentRoomId = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(joinRoom.pending, (state) => {
@@ -412,6 +415,7 @@ export const {
   userLeft,
   startTyping,
   stopTyping,
+  setCurrentRoomId,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

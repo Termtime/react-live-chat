@@ -49,7 +49,7 @@ export const UserList = () => {
   return (
     <Flex css={userListStyles}>
       <Text>
-        {`${currentRoom.users.length === 1 ? "User" : "Users"}`} online:{" "}
+        {`Users online: `}
         {currentRoom.users.length}
       </Text>
       <Flex direction="column" alignItems="flex-start" width="100%">
