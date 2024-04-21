@@ -4,10 +4,10 @@ import {
   userStoppedTyping,
   userJoined,
   userLeft,
-  Room,
+  RoomV2,
 } from "../redux/toolkit/features/chatSlice";
 import {getAppDispatch} from "../redux/toolkit/store";
-import {UserEncryptedMessage, User, PublicAuthUser} from "../types";
+import {UserEncryptedMessage, User, PusherUserPayload} from "../types";
 import Pusher, {Members, PresenceChannel} from "pusher-js";
 import {generateLinkedColor} from "../utils";
 import {
@@ -17,7 +17,7 @@ import {
 } from "../types/events";
 
 interface ConnectResponse {
-  room: Room;
+  room: RoomV2;
   myId: string;
 }
 
@@ -25,7 +25,7 @@ type PusherMember = {id: string; info: Omit<User, "id">};
 
 export interface InitializePusherParams {
   roomId: string;
-  authUserInfo: PublicAuthUser;
+  authUserInfo: PusherUserPayload;
 }
 
 export class PusherConnection {
@@ -197,7 +197,7 @@ export class PusherConnection {
             id: members.myID,
             username: members.me.info.username,
             publicKey: members.me.info.publicKey,
-            color: generateLinkedColor(members.me.info.username),
+            color: generateLinkedColor(members.myID),
           };
 
           members.each((member: {id: string; info: Omit<User, "id">}) => {
@@ -205,7 +205,7 @@ export class PusherConnection {
               id: member.id,
               username: member.info.username,
               publicKey: member.info.publicKey,
-              color: generateLinkedColor(member.info.username),
+              color: generateLinkedColor(members.myID),
             };
 
             users.push(user);
@@ -224,6 +224,10 @@ export class PusherConnection {
               id: roomId,
               name: roomName,
               users: users,
+              isLoading: false,
+              lastMessage: null,
+              messages: [],
+              typingUsers: [],
             },
             myId: me.id,
           });

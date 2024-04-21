@@ -1,27 +1,18 @@
 import {Flex, Text} from "@chakra-ui/react";
 import {css} from "@emotion/react";
-import Color from "color";
 import {useAppSelector} from "../redux/toolkit/store";
 import {Message} from "../types";
 
 export const TextMessage = ({message}: {message: Message}) => {
   const {authUser: user} = useAppSelector((state) => state.chat);
-  const messageBackgroundColor = message.user.color || "#31287e";
-  const messageColor = Color(messageBackgroundColor).isLight()
-    ? "black"
-    : "white";
-
-  // use a slighly different color for the timestamp
-  const timestampColor = Color(messageBackgroundColor).isLight()
-    ? "#555"
-    : "#ccc";
+  const usernameColor = message.user.color;
 
   const messageStyles = css`
     display: flex;
     flex-direction: column;
     margin-bottom: 0.5rem;
-    background-color: ${messageBackgroundColor};
-    color: ${messageColor};
+    background-color: #202c33;
+    color: #e9edef;
     word-break: break-all;
     text-overflow: clip;
     white-space: pre-line;
@@ -57,16 +48,20 @@ export const TextMessage = ({message}: {message: Message}) => {
   const timestampStyles = css`
     align-self: flex-end;
     margin-bottom: 5px;
-    color: ${timestampColor};
+    color: #9dab99;
   `;
 
   return (
     <Flex
       css={message.user.id === user?.id ? ownMessageStyles : otherMessageStyles}
     >
-      <small>{message.user.username}</small>
+      {message.user.id !== user?.id && (
+        <Text fontSize="sm" color={usernameColor}>
+          {message.user.username}
+        </Text>
+      )}
       <Text margin={0}>{message.body}</Text>
-      <Text margin={0} css={timestampStyles}>
+      <Text margin={0} fontSize="xs" css={timestampStyles}>
         {message.time}
       </Text>
     </Flex>

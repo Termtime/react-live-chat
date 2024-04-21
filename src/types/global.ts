@@ -5,8 +5,7 @@ export interface User {
   color?: string;
 }
 
-// TODO: Review usage and reduce if possible
-export interface PublicAuthUser {
+export interface PusherUserPayload {
   username: string;
   publicKey: string;
   color?: string;
@@ -50,9 +49,4 @@ export interface UserEncryptedMessage {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt
    */
   iv: string;
-}
-
-export interface RoomHandshake {
-  user: PublicAuthUser;
-  roomId: string;
 }

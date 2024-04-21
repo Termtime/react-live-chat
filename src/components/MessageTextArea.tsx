@@ -47,8 +47,8 @@ export const MessageTextArea = () => {
           body: text,
           user: {
             id: authUser.id!,
-            username: authUser?.username,
-            color: authUser?.color,
+            username: authUser.username,
+            color: authUser.color,
           },
           time: new Date().toLocaleTimeString("en-US"),
         };

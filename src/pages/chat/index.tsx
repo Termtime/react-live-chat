@@ -36,7 +36,9 @@ const ChatPage = () => {
     onUnauthenticated: () => router.push("/"),
   });
 
-  const {rooms, typingUsers, authUser} = useAppSelector((state) => state.chat);
+  const {rooms, authUser, currentRoomId} = useAppSelector(
+    (state) => state.chat
+  );
 
   const {isOpen: isNewRoomModalOpen} = useAppSelector(
     (state) => state.ui.newRoomModal
@@ -44,6 +46,8 @@ const ChatPage = () => {
 
   const [roomIdInput, setRoomIdInput] = React.useState("");
   const dispatch = useDispatch<AppDispatch>();
+  const typingUsers =
+    rooms.find((room) => room.id === currentRoomId)?.typingUsers || [];
 
   const renderTypingUsers = useMemo(() => {
     let string: string | React.ReactElement = "";

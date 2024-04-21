@@ -21,7 +21,8 @@ export const initializeServerPusher = () => {
 
   return pusher;
 };
-export const generateLinkedColor = (username: string) => {
+export const generateLinkedColor = (userId: string) => {
+  console.log("Generating color for user", userId);
   const colors = [
     "#E91E63",
     "#9C27B0",
@@ -43,10 +44,14 @@ export const generateLinkedColor = (username: string) => {
     "#607D8B",
   ];
 
-  const sum = username
+  const sum = userId
     .split("")
     .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const index = sum % colors.length;
+
+  console.log("Sum", sum);
+  console.log("Index", index);
+  console.log("Generated color", colors[index]);
 
   return colors[index];
 };

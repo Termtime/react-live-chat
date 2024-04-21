@@ -1,12 +1,6 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import type {PayloadAction} from "@reduxjs/toolkit";
-import {
-  AuthUser,
-  Message,
-  PublicAuthUser,
-  User,
-  UserEncryptedMessage,
-} from "../../../types";
+import {AuthUser, Message, User, UserEncryptedMessage} from "../../../types";
 import {decryptMessage, encryptMessage, generateKeys} from "../../../utils";
 import {PusherConnection} from "../../../pusher/connection";
 import {RootState} from "../store";
@@ -21,15 +15,6 @@ export interface RoomV2 {
   lastMessage: Message | null;
   typingUsers: User[];
   isLoading: boolean;
-}
-// TODO: finish removal of the interface
-/**
- * @deprecated Use RoomV2 instead
- */
-export interface Room {
-  id: string;
-  name: string;
-  users: User[];
 }
 export interface ChatState {
   /**
@@ -48,10 +33,6 @@ export interface ChatState {
 
   currentRoomId: string | null;
   /**
-   * Users that are currently typing
-   */
-  typingUsers: User[];
-  /**
    * Whether the room is currently being connected to
    */
   isLoadingRoom: boolean;
@@ -62,7 +43,6 @@ const initialState: ChatState = {
   messages: [],
   currentRoomId: null,
   rooms: [],
-  typingUsers: [],
   isLoadingRoom: false,
 };
 
@@ -117,10 +97,6 @@ export const sendMessage = createAsyncThunk(
     if (!currentRoom) {
       throw new Error("Room not found");
     }
-
-    console.log("currentRoom", currentRoom);
-    console.log("currentRoomUsers", currentRoom.users);
-    console.log("authUser", authUser);
 
     const channelMembers = currentRoom.users.filter(
       (u) => u.id !== authUser.id
@@ -178,6 +154,8 @@ export const receivedMessage = createAsyncThunk(
       authUser.privateKey
     );
 
+    console.log("Decrypted message", decryptedMessage);
+
     return {message: decryptedMessage, roomId: messageForMe.roomId};
   }
 );
@@ -201,7 +179,7 @@ export const chatSlice = createSlice({
       // Rooms V2
       state.rooms = state.rooms.map((r) => {
         if (r.id === action.payload.roomId) {
-          r.users = [...r.users, action.payload.user];
+          r.users = Array.from(new Set([...r.users, action.payload.user]));
         }
         return r;
       });
@@ -287,10 +265,6 @@ export const chatSlice = createSlice({
         action.payload
       );
 
-      state.typingUsers = state.typingUsers.filter(
-        (user) => user.id !== action.payload.userId
-      );
-
       // Rooms V2
       const roomFromRooms = state.rooms.find(
         (r) => r.id === action.payload.roomId
@@ -346,6 +320,9 @@ export const chatSlice = createSlice({
 
       state.authUser!.id = action.payload.myId;
       state.currentRoomId = action.payload.room.id;
+      state.authUser!.color = action.payload.room.users.find(
+        (u) => u.id === action.payload.myId
+      )?.color!;
     });
 
     builder.addCase(sendMessage.rejected, (state, action) => {
