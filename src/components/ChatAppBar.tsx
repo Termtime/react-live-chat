@@ -5,17 +5,18 @@ import {useAppSelector, useAppDispatch} from "../redux/toolkit/store";
 import GroupIcon from "@mui/icons-material/Group";
 import {
   setChatListOpen,
-  setNewRoomModalOpen,
   toggleUserList,
 } from "../redux/toolkit/features/uiSlice";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {logout} from "../redux/toolkit/features/chatSlice";
-import {AddComment, ChevronLeft, Menu} from "@mui/icons-material";
+import {useTypingUsers} from "../hooks/useTypingUsers";
+import {ghostButtonStyles} from "../styles/styles";
+import {Menu} from "@mui/icons-material";
 
 const headerStyles = css`
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  background-color: #752c2c;
+  background-color: #222e35;
   padding: 1rem;
   color: white;
   box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
@@ -23,32 +24,17 @@ const headerStyles = css`
   flex: none;
 `;
 
-const titleStyles = css`
-  align-self: center;
-  margin: 0;
-`;
-
 const titleWrapperStyles = css`
-  justify-content: center;
-  align-items: center;
   flex: 2;
-`;
-
-const ghostButtonStyles = css`
-  background-color: transparent;
-  border-radius: 50%;
-  padding: 0.5rem;
 `;
 
 export const ChatAppBar = () => {
   const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
-  const {isExpanded: isUserListExpanded} = useAppSelector(
-    (state) => state.ui.userList
-  );
   const {isExpanded: isChatListExpanded} = useAppSelector(
     (state) => state.ui.chatList
   );
 
+  const typingUsers = useTypingUsers();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
@@ -58,20 +44,9 @@ export const ChatAppBar = () => {
     dispatch(logout());
   };
 
-  const userListButtonStyles = css`
-    background-color: ${isUserListExpanded ? "#b33b3b" : "transparent"};
-    ${ghostButtonStyles}
-  `;
-
   return (
-    <Flex css={headerStyles}>
-      <Flex
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        maxWidth="350px"
-        flex={1}
-      >
+    <Flex css={headerStyles} gap={4}>
+      {!isChatListExpanded && (
         <Button
           variant="solid"
           css={ghostButtonStyles}
@@ -80,26 +55,16 @@ export const ChatAppBar = () => {
             dispatch(setChatListOpen(!isChatListExpanded));
           }}
         >
-          {isChatListExpanded ? <ChevronLeft /> : <Menu />}
+          <Menu />
         </Button>
-        <Text>Rooms</Text>
-        <Tooltip label="Add new room">
-          <Button
-            variant="solid"
-            css={ghostButtonStyles}
-            colorScheme="green"
-            onClick={() => dispatch(setNewRoomModalOpen(true))}
-          >
-            <AddComment
-              sx={{
-                transform: "scale(-1,1)",
-              }}
-            />
-          </Button>
-        </Tooltip>
-      </Flex>
-      <Flex direction="row" css={titleWrapperStyles}>
-        <Text css={titleStyles}>Room: {currentRoom?.name ?? ""}</Text>
+      )}
+      <Flex
+        flexDirection="column"
+        alignItems="flex-start"
+        css={titleWrapperStyles}
+      >
+        <Text>Room: {currentRoom?.name ?? ""}</Text>
+        <Text color="white">{typingUsers}</Text>
       </Flex>
       <Flex
         style={{
@@ -109,7 +74,7 @@ export const ChatAppBar = () => {
         <Tooltip label="User list">
           <Button
             variant="solid"
-            css={userListButtonStyles}
+            css={ghostButtonStyles}
             colorScheme="red"
             onClick={() => dispatch(toggleUserList())}
           >

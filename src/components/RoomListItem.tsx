@@ -17,15 +17,15 @@ export const RoomListItem = ({
 }: RoomListItemProps) => {
   return (
     <Flex
-      p={2}
-      m={1}
-      borderRadius="md"
-      bg={isActive ? "gray.200" : "white"}
+      p={4}
+      gap={3}
+      bg={isActive ? "#2a3942" : "#111b21"}
       cursor="pointer"
-      _hover={{bg: "gray.100"}}
+      color="white"
       onClick={onClick}
+      _hover={{bg: isActive ? "#2a3942" : "#202c33"}}
     >
-      <Avatar name={room.name} size="sm" mr={2} bg="gray.300" />
+      <Avatar name={room.name} size="sm" bg="gray.300" />
       <Flex flexDirection="column" overflow="hidden">
         <Flex fontWeight="bold">{room.name}</Flex>
 
@@ -42,7 +42,7 @@ export const RoomListItem = ({
                 ? "You: "
                 : room.lastMessage.user.username + ": "
               : ""}
-            {room.lastMessage?.body ?? ""}
+            {room.lastMessage?.body ?? <br />}
           </Text>
         </Flex>
       </Flex>

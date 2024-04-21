@@ -15,6 +15,8 @@ import {Message} from "../types";
 import {EmojiButton, EmojiButtonProps} from "./EmojiButton";
 import SendIcon from "@mui/icons-material/Send";
 import debounce from "lodash.debounce";
+import {ghostButtonStyles} from "../styles/styles";
+import ResizeTextarea from "react-textarea-autosize";
 
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
@@ -97,30 +99,40 @@ export const MessageTextArea = () => {
 
   const textAreaStyles = css`
     flex-grow: 1;
-    box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.75);
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: #2a3942;
     color: white;
     resize: none;
     max-height: 120px;
     border: 0;
+
+    :focus {
+      box-shadow: none;
+    }
   `;
 
   const formContainerStyles = css`
     flex: 1;
+    gap: 5px;
   `;
   return (
     <form onSubmit={handleSendMessage}>
       <Flex css={formContainerStyles}>
         <EmojiButton onClick={onEmojiSelected} />
         <Textarea
+          outline={"none"}
           css={textAreaStyles}
-          rows={1}
           value={text}
+          minH="unset"
+          overflow="hidden"
+          w="100%"
+          resize="none"
+          minRows={1}
+          as={ResizeTextarea}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Write something..."
+          placeholder="Write something"
         />
-        <Button type="submit" colorScheme="blue">
+        <Button type="submit" css={ghostButtonStyles}>
           <SendIcon />
         </Button>
       </Flex>

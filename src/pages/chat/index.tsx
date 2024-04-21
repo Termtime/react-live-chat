@@ -23,10 +23,9 @@ import {setNewRoomModalOpen} from "../../redux/toolkit/features/uiSlice";
 
 const chatAppStyles = css`
   display: flex;
-  background-color: #1c2224;
+  background-color: #222e35;
   flex-direction: column;
-  padding: 1rem;
-  height: 100vh;
+  max-height: 100vh;
 `;
 
 const ChatPage = () => {
@@ -46,32 +45,8 @@ const ChatPage = () => {
 
   const [roomIdInput, setRoomIdInput] = React.useState("");
   const dispatch = useDispatch<AppDispatch>();
-  const typingUsers =
-    rooms.find((room) => room.id === currentRoomId)?.typingUsers || [];
-
-  const renderTypingUsers = useMemo(() => {
-    let string: string | React.ReactElement = "";
-    if (typingUsers.length === 1) {
-      string = typingUsers.map((user) => user.username) + " is typing...";
-    } else if (typingUsers.length > 1) {
-      let usersMinusLast = [...typingUsers.map((user) => user.username)];
-      usersMinusLast.pop();
-      console.log(usersMinusLast);
-      string =
-        usersMinusLast.join(",") +
-        " and " +
-        typingUsers[usersMinusLast.length].username +
-        " are typing...";
-    } else if (typingUsers.length > 5) {
-      string = "Multiple people are typing...";
-    } else {
-      string = <div>&nbsp;</div>;
-    }
-    return string;
-  }, [typingUsers]);
 
   useEffect(() => {
-    console.log(data);
     if (status === "authenticated" && data.user?.name) {
       dispatch(login(data.user?.name));
     }
@@ -118,15 +93,15 @@ const ChatPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <ChatAppBar />
-      <Flex flex={1} overflowY="auto">
+      <Flex flex={1}>
         <RoomList />
-        <MessagesBox />
-        <UserList />
-      </Flex>
-      <Flex direction="column">
-        <Text color="white">{renderTypingUsers}</Text>
-        <MessageTextArea />
+        <Flex flex={1} overflowY="auto" flexDirection="column" zIndex={2}>
+          <ChatAppBar />
+          <Flex flex={1} overflowY="auto">
+            <MessagesBox />
+            <UserList />
+          </Flex>
+        </Flex>
       </Flex>
     </Flex>
   );

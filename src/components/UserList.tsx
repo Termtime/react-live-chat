@@ -2,52 +2,63 @@ import {Flex, Text} from "@chakra-ui/react";
 import {css} from "@emotion/react";
 import {useAppSelector} from "../redux/toolkit/store";
 import PersonIcon from "@mui/icons-material/Person";
+import {useEffect, useState} from "react";
+
+const userListStyles = css`
+  background-color: #111b21;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  border-bottom-left-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  overflow-y: auto;
+  width: 15rem;
+  scrollbar-width: thin;
+  scrollbar-color: #374045 #111b21;
+
+  // Hide the user list when the screen is too small
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+`;
+
+const userStyles = css`
+  display: flex;
+  margin-bottom: 0.5rem;
+  word-break: break-all;
+`;
 
 export const UserList = () => {
   const {rooms, currentRoomId, authUser} = useAppSelector(
     (state) => state.chat
   );
 
-  const {isExpanded} = useAppSelector((state) => state.ui.userList);
+  const {isExpanded: isUserListExpanded} = useAppSelector(
+    (state) => state.ui.userList
+  );
 
-  const userListStyles = css`
-    background-color: #752c2c;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-    border-bottom-left-radius: 0.5rem;
-    padding: 1rem;
-    display: flex;
-    overflow-y: auto;
-    width: 15rem;
-    &::-webkit-scrollbar {
-      width: 0.5rem;
-    }
-    &::-webkit-scrollbar-track {
-      background: #752c2c;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #b33b3b;
-    }
-    display: ${isExpanded ? "flex" : "none"};
+  const [shouldHide, setShouldHide] = useState(false);
 
-    // Hide the user list when the screen is too small
-    @media (max-width: 600px) {
-      width: 100%;
+  useEffect(() => {
+    if (!isUserListExpanded) {
+      setTimeout(() => {
+        setShouldHide(true);
+      }, 300);
+    } else {
+      setShouldHide(false);
     }
-  `;
-
-  const userStyles = css`
-    display: flex;
-    margin-bottom: 0.5rem;
-    word-break: break-all;
-  `;
-
+  }, [isUserListExpanded]);
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
   if (!currentRoom) return null;
 
   return (
-    <Flex css={userListStyles}>
+    <Flex
+      css={userListStyles}
+      marginLeft={isUserListExpanded ? 0 : "-15rem"}
+      transition="margin-left 0.3s ease"
+      visibility={shouldHide ? "hidden" : "visible"}
+    >
       <Text>
         {`Users online: `}
         {currentRoom.users.length}
