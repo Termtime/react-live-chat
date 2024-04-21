@@ -1,10 +1,10 @@
-import {Flex, Text} from "@chakra-ui/react";
+import {Flex} from "@chakra-ui/react";
 import {css} from "@emotion/react";
 import {useAppSelector} from "../redux/toolkit/store";
 import {TextMessage} from "./TextMessage";
 import {MessageTextArea} from "./MessageTextArea";
 
-const messagesBoxStyles = css`
+const chatWindowStyles = css`
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
     url("/resources/img/chat-wallpaper.jpg");
   background-blend-mode: luminosity;
@@ -15,7 +15,7 @@ const messagesBoxStyles = css`
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
-  max-height: 93vh;
+  height: 95vh;
 `;
 
 const messageTextAreaStyles = css`
@@ -29,25 +29,27 @@ const messageTextAreaStyles = css`
 
 const messageListStyles = css`
   overflow-y: auto;
-  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
+  padding: 1rem;
 `;
 
-export const MessagesBox = () => {
+export const ChatWindow = () => {
   const {currentRoomId, rooms} = useAppSelector((state) => state.chat);
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
   return (
-    <Flex css={messagesBoxStyles} zIndex={2}>
+    <Flex css={chatWindowStyles} zIndex={2}>
       <Flex direction="column" css={messageListStyles}>
-        {currentRoom?.messages.map((message) => (
+        {currentRoom?.messages.map((message, i) => (
           <TextMessage
             key={`${message.user.id}-${message.time}`}
             message={message}
+            isFirstInChain={
+              message.user.id !== currentRoom?.messages[i - 1]?.user.id
+            }
           />
         ))}
       </Flex>

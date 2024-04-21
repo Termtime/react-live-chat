@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from "react";
-import {MessagesBox, MessageTextArea, UserList, ChatAppBar} from "@/components";
+import {ChatWindow, MessageTextArea, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
 import {useAppSelector, AppDispatch} from "../../redux/toolkit/store";
 import {joinRoom, login, logout} from "../../redux/toolkit/features/chatSlice";
@@ -25,6 +25,7 @@ const chatAppStyles = css`
   display: flex;
   background-color: #222e35;
   flex-direction: column;
+  height: 100vh;
   max-height: 100vh;
 `;
 
@@ -98,7 +99,7 @@ const ChatPage = () => {
         <Flex flex={1} overflowY="auto" flexDirection="column" zIndex={2}>
           <ChatAppBar />
           <Flex flex={1} overflowY="auto">
-            <MessagesBox />
+            <ChatWindow />
             <UserList />
           </Flex>
         </Flex>

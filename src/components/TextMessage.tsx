@@ -6,7 +6,6 @@ import {Message} from "../types";
 const messageStyles = css`
   display: flex;
   flex-direction: column;
-  margin-bottom: 0.5rem;
   color: #e9edef;
   word-break: break-all;
   text-overflow: clip;
@@ -50,26 +49,34 @@ const timestampStyles = css`
 
 const messageContainerStyles = css`
   flex-direction: row;
-  margin-bottom: 0.5rem;
-  gap: 1rem;
+  margin-bottom: 0.25rem;
+  gap: 0.5rem;
 `;
-export const TextMessage = ({message}: {message: Message}) => {
+export const TextMessage = ({
+  message,
+  isFirstInChain,
+}: {
+  message: Message;
+  isFirstInChain: boolean;
+}) => {
   const {authUser} = useAppSelector((state) => state.chat);
   const usernameColor = message.user.color;
+  const isOwnMessage = message.user.id === authUser?.id;
 
   return (
     <Flex
       css={messageContainerStyles}
-      alignSelf={message.user.id === authUser?.id ? "flex-end" : "flex-start"}
+      alignSelf={isOwnMessage ? "flex-end" : "flex-start"}
     >
-      <Avatar name={message.user.username} size="sm" bg={message.user.color} />
-      <Flex
-        css={
-          message.user.id === authUser?.id
-            ? ownMessageStyles
-            : otherMessageStyles
-        }
-      >
+      {!isOwnMessage && (
+        <Avatar
+          visibility={isFirstInChain ? "visible" : "hidden"}
+          name={message.user.username}
+          size="sm"
+          bg={message.user.color}
+        />
+      )}
+      <Flex css={isOwnMessage ? ownMessageStyles : otherMessageStyles}>
         {message.user.id !== authUser?.id && (
           <Text fontSize="sm" color={usernameColor}>
             {message.user.username}

@@ -18,6 +18,7 @@ const headerStyles = css`
   border-top-right-radius: 0.5rem;
   background-color: #222e35;
   padding: 1rem;
+  height: 4rem;
   color: white;
   box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
   align-items: center;
@@ -26,6 +27,9 @@ const headerStyles = css`
 
 const titleWrapperStyles = css`
   flex: 2;
+  align-items: center;
+  justify-content: center;
+  text-align: start;
 `;
 
 export const ChatAppBar = () => {
@@ -58,13 +62,9 @@ export const ChatAppBar = () => {
           <Menu />
         </Button>
       )}
-      <Flex
-        flexDirection="column"
-        alignItems="flex-start"
-        css={titleWrapperStyles}
-      >
+      <Flex flexDirection="column" css={titleWrapperStyles}>
         <Text>Room: {currentRoom?.name ?? ""}</Text>
-        <Text color="white">{typingUsers}</Text>
+        <Text fontSize="xs">{typingUsers}</Text>
       </Flex>
       <Flex
         style={{

@@ -13,7 +13,7 @@ import {css} from "@emotion/react";
 
 const roomListStyles = css`
   overflow-y: auto;
-  height: 94vh;
+  height: 95vh;
   flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
@@ -39,18 +39,19 @@ export const RoomList = () => {
   return (
     <Flex
       flexDir="column"
-      backgroundColor="#111b21"
+      backgroundColor="#222e35"
       maxWidth="350px"
       flex={1}
       marginRight={isChatListExpanded ? 0 : -350}
       transition="margin-right 0.3s ease"
       visibility={shouldHide ? "hidden" : "visible"}
+      borderRight={isChatListExpanded ? "1px solid #374045" : "none"}
     >
       <Flex
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        maxWidth="350px"
+        height="4rem"
         padding={4}
       >
         <Flex alignItems="center">
