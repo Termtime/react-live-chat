@@ -17,6 +17,7 @@ const roomListStyles = css`
   flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
+  background-color: #111b21;
 `;
 export const RoomList = () => {
   const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
