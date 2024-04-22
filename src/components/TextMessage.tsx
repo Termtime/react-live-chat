@@ -77,8 +77,12 @@ export const TextMessage = ({
         />
       )}
       <Flex css={isOwnMessage ? ownMessageStyles : otherMessageStyles}>
-        {message.user.id !== authUser?.id && (
-          <Text fontSize="sm" color={usernameColor}>
+        {!isOwnMessage && (
+          <Text
+            fontSize="sm"
+            color={usernameColor}
+            display={isFirstInChain ? "flex" : "none"}
+          >
             {message.user.username}
           </Text>
         )}

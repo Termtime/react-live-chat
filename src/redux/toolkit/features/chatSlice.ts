@@ -179,7 +179,22 @@ export const chatSlice = createSlice({
       // Rooms V2
       state.rooms = state.rooms.map((r) => {
         if (r.id === action.payload.roomId) {
-          r.users = Array.from(new Set([...r.users, action.payload.user]));
+          // search if the user exists in the room
+          const userInRoom = r.users.find(
+            (u) => u.id === action.payload.user.id
+          );
+
+          if (userInRoom === undefined) {
+            r.users = [...r.users, action.payload.user];
+          } else {
+            // update the user
+            r.users = r.users.map((u) => {
+              if (u.id === action.payload.user.id) {
+                return action.payload.user;
+              }
+              return u;
+            });
+          }
         }
         return r;
       });
