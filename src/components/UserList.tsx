@@ -16,11 +16,6 @@ const userListStyles = css`
   width: 15rem;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
-
-  // Hide the user list when the screen is too small
-  @media (max-width: 600px) {
-    width: 100%;
-  }
 `;
 
 const userStyles = css`

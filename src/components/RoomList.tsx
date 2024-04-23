@@ -41,9 +41,10 @@ export const RoomList = () => {
     <Flex
       flexDir="column"
       backgroundColor="#222e35"
-      maxWidth="350px"
+      width={"20rem"}
+      maxWidth={"20rem"}
       flex={1}
-      marginRight={isChatListExpanded ? 0 : -350}
+      marginRight={isChatListExpanded ? 0 : "-20rem"}
       transition="margin-right 0.3s ease"
       visibility={shouldHide ? "hidden" : "visible"}
       borderRight={isChatListExpanded ? "1px solid #374045" : "none"}
