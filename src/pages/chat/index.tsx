@@ -20,6 +20,7 @@ import {useDispatch} from "react-redux";
 import {useSession} from "next-auth/react";
 import {RoomList} from "../../components/RoomList";
 import {setNewRoomModalOpen} from "../../redux/toolkit/features/uiSlice";
+import {ghostButtonStyles} from "../../styles/styles";
 
 const chatAppStyles = css`
   display: flex;
@@ -88,6 +89,15 @@ const ChatPage = () => {
           </ModalBody>
 
           <ModalFooter>
+            {rooms.length > 0 && (
+              <Button
+                colorScheme="grey"
+                variant="ghost"
+                onClick={() => dispatch(setNewRoomModalOpen(false))}
+              >
+                Cancel
+              </Button>
+            )}
             <Button colorScheme="blue" onClick={handleJoinRoom}>
               Join room
             </Button>

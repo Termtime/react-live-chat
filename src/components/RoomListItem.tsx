@@ -41,10 +41,18 @@ export const RoomListItem = ({
         p={4}
         pl={1}
         mr={1}
+        gap={1}
         borderBottom={isActive ? undefined : "1px solid #222d34"}
       >
-        <Flex justifyContent="space-between" flex={1}>
-          <Text fontWeight="bold">{room.name}</Text>
+        <Flex justifyContent="space-between" flex={1} gap={1} flexWrap="wrap">
+          <Text
+            fontWeight="bold"
+            whiteSpace="nowrap"
+            textOverflow="ellipsis"
+            overflow="hidden"
+          >
+            {room.name}
+          </Text>
           <Text fontSize="sm" color="gray.400">
             {timeText}
           </Text>

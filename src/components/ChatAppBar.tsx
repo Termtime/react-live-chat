@@ -17,7 +17,6 @@ const headerStyles = css`
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   background-color: #222e35;
-  padding: 1rem;
   height: 5dvh;
   @media (max-width: 768px) {
     height: 10dvh;
@@ -66,7 +65,14 @@ export const ChatAppBar = () => {
   };
 
   return (
-    <Flex css={headerStyles} gap={4}>
+    <Flex
+      css={headerStyles}
+      padding={4}
+      gap={{
+        base: 2,
+        md: 4,
+      }}
+    >
       {!isChatListExpanded && (
         <Button
           variant="solid"
@@ -79,8 +85,20 @@ export const ChatAppBar = () => {
           <Menu />
         </Button>
       )}
-      <Flex flexDirection="column" css={titleWrapperStyles}>
-        <Text>Room: {currentRoom?.name ?? ""}</Text>
+      <Flex
+        flexDirection="column"
+        css={titleWrapperStyles}
+        maxWidth="40dvw"
+        margin="auto"
+        overflow="hidden"
+        visibility={{
+          base: isChatListExpanded ? "hidden" : "visible",
+          md: "visible",
+        }}
+      >
+        <Text overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+          Room: {currentRoom?.name ?? ""}
+        </Text>
         <Text
           fontSize="xs"
           overflow="hidden"

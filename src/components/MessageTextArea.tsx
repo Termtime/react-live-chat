@@ -66,7 +66,15 @@ export const MessageTextArea = () => {
     async (e?: React.MouseEvent) => {
       if (e) e.preventDefault();
       if (text.trim().length === 0) return;
+      console.log(
+        "Sending message",
+        text,
+        authUser,
+        currentRoomId,
+        currentRoom
+      );
       if (authUser && currentRoomId && currentRoom) {
+        console.log("yeah");
         const message: Message = {
           body: text,
           user: {
@@ -142,9 +150,7 @@ export const MessageTextArea = () => {
         onKeyDown={handleKeyDown}
         placeholder="Write something"
         onFocus={() => {
-          console.log("focus", window.innerWidth);
           if (window.innerWidth < 768) {
-            console.log("closing in!");
             dispatch(setChatListOpen(false));
             dispatch(setUserListOpen(false));
           }

@@ -51,6 +51,12 @@ export const RoomList = () => {
       max-width: 50dvw;
     }
   `;
+  const responsiveHeaderStyles = css`
+    height: 5dvh;
+    @media (max-width: 768px) {
+      height: 10dvh;
+    }
+  `;
   return (
     <Flex
       css={roomListResponsiveStyles}
@@ -65,7 +71,7 @@ export const RoomList = () => {
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        height="4rem"
+        css={responsiveHeaderStyles}
         padding={4}
       >
         <Flex alignItems="center">
