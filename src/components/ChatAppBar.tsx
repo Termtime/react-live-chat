@@ -5,7 +5,7 @@ import {useAppSelector, useAppDispatch} from "../redux/toolkit/store";
 import GroupIcon from "@mui/icons-material/Group";
 import {
   setChatListOpen,
-  toggleUserList,
+  setUserListOpen,
 } from "../redux/toolkit/features/uiSlice";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {logout} from "../redux/toolkit/features/chatSlice";
@@ -40,14 +40,22 @@ export const ChatAppBar = () => {
     (state) => state.ui.chatList
   );
 
+  const {isExpanded: isUserListExpanded} = useAppSelector(
+    (state) => state.ui.userList
+  );
+
   const typingUsers = useTypingUsers();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
-  const usersMinusMe = currentRoom?.users.filter(
-    (user) => user.id !== authUser?.id!
-  );
-  const myUsernameInList = (usersMinusMe?.length ?? 0) <= 5 ? ", you" : " ";
+  const usersMinusMe =
+    currentRoom?.users.filter((user) => user.id !== authUser?.id!) || [];
+  const myUsernameInList =
+    usersMinusMe.length <= 5 && usersMinusMe.length > 0
+      ? ", you"
+      : usersMinusMe.length === 0
+      ? "you"
+      : "";
 
   const disconnect = async () => {
     await router.push("/");
@@ -77,7 +85,7 @@ export const ChatAppBar = () => {
           textOverflow="ellipsis"
         >
           {typingUsers ??
-            usersMinusMe?.map((u) => u.username.split(" ")[0]).join(", ") +
+            usersMinusMe.map((u) => u.username.split(" ")[0]).join(", ") +
               myUsernameInList}
         </Text>
       </Flex>
@@ -91,7 +99,7 @@ export const ChatAppBar = () => {
             variant="solid"
             css={ghostButtonStyles}
             colorScheme="red"
-            onClick={() => dispatch(toggleUserList())}
+            onClick={() => dispatch(setUserListOpen(!isUserListExpanded))}
           >
             <GroupIcon />
           </Button>

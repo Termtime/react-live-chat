@@ -74,12 +74,12 @@ const ChatPage = () => {
         isOpen={isNewRoomModalOpen && !!authUser}
         closeOnEsc={false}
         closeOnOverlayClick={false}
+        isCentered
       >
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent backgroundColor="#222e35" color="white">
           <ModalHeader>Select a room to join</ModalHeader>
           <ModalBody>
-            test!
             <Input
               value={roomIdInput}
               onChange={(e) => setRoomIdInput(e.target.value)}

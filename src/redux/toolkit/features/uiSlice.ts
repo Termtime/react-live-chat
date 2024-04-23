@@ -28,11 +28,17 @@ export const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    toggleUserList: (state) => {
-      state.userList.isExpanded = !state.userList.isExpanded;
+    setUserListOpen: (state, action) => {
+      state.userList.isExpanded = action.payload;
+      if (window.innerWidth < 768) {
+        state.chatList.isExpanded = false;
+      }
     },
     setChatListOpen: (state, action) => {
       state.chatList.isExpanded = action.payload;
+      if (window.innerWidth < 768) {
+        state.userList.isExpanded = false;
+      }
     },
     setNewRoomModalOpen: (state, action) => {
       state.newRoomModal.isOpen = action.payload;
@@ -40,7 +46,7 @@ export const uiSlice = createSlice({
   },
 });
 
-export const {toggleUserList, setChatListOpen, setNewRoomModalOpen} =
+export const {setUserListOpen, setChatListOpen, setNewRoomModalOpen} =
   uiSlice.actions;
 
 export default uiSlice.reducer;

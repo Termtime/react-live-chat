@@ -17,6 +17,28 @@ import SendIcon from "@mui/icons-material/Send";
 import debounce from "lodash.debounce";
 import {ghostButtonStyles} from "../styles/styles";
 import ResizeTextarea from "react-textarea-autosize";
+import {
+  setChatListOpen,
+  setUserListOpen,
+} from "../redux/toolkit/features/uiSlice";
+
+const textAreaStyles = css`
+  flex-grow: 1;
+  background-color: #2a3942;
+  color: white;
+  resize: none;
+  max-height: 120px;
+  border: 0;
+
+  :focus {
+    box-shadow: none;
+  }
+`;
+
+const formContainerStyles = css`
+  flex: 1;
+  gap: 5px;
+`;
 
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
@@ -97,23 +119,6 @@ export const MessageTextArea = () => {
     [text, handleChange]
   );
 
-  const textAreaStyles = css`
-    flex-grow: 1;
-    background-color: #2a3942;
-    color: white;
-    resize: none;
-    max-height: 120px;
-    border: 0;
-
-    :focus {
-      box-shadow: none;
-    }
-  `;
-
-  const formContainerStyles = css`
-    flex: 1;
-    gap: 5px;
-  `;
   return (
     <form onSubmit={handleSendMessage}>
       <Flex css={formContainerStyles}>
@@ -131,6 +136,14 @@ export const MessageTextArea = () => {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Write something"
+          onFocus={() => {
+            console.log("focus", window.innerWidth);
+            if (window.innerWidth < 768) {
+              console.log("closing in!");
+              dispatch(setChatListOpen(false));
+              dispatch(setUserListOpen(false));
+            }
+          }}
         />
         <Button type="submit" css={ghostButtonStyles}>
           <SendIcon />

@@ -16,12 +16,13 @@ export const RoomListItem = ({
   isActive,
   onClick,
 }: RoomListItemProps) => {
-  const date = moment(room.lastMessage?.time);
+  const date = room.lastMessage ? moment(room.lastMessage?.time) : undefined;
 
-  const timeText =
-    date.isValid() && date.diff(moment().subtract(1, "d"), "d", false) > 0
+  const timeText = date
+    ? date.isValid() && date.diff(moment().subtract(1, "d"), "d", false) > 0
       ? date.fromNow()
-      : date.format("h:mm a");
+      : date.format("h:mm a")
+    : "";
   return (
     <Flex
       gap={3}
