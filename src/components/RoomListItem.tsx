@@ -1,6 +1,7 @@
 import {Flex, Avatar, Box, Text} from "@chakra-ui/react";
 import {RoomV2} from "../redux/toolkit/features/chatSlice";
 import {AuthUser} from "../types";
+import moment from "moment";
 
 export interface RoomListItemProps {
   room: RoomV2;
@@ -15,6 +16,12 @@ export const RoomListItem = ({
   isActive,
   onClick,
 }: RoomListItemProps) => {
+  const date = moment(room.lastMessage?.time);
+
+  const timeText =
+    date.isValid() && date.diff(moment().subtract(1, "d"), "d", false) > 0
+      ? date.fromNow()
+      : date.format("h:mm a");
   return (
     <Flex
       gap={3}
@@ -32,13 +39,13 @@ export const RoomListItem = ({
         flex={1}
         p={4}
         pl={1}
-        mr={4}
+        mr={1}
         borderBottom={isActive ? undefined : "1px solid #222d34"}
       >
         <Flex justifyContent="space-between" flex={1}>
           <Text fontWeight="bold">{room.name}</Text>
           <Text fontSize="sm" color="gray.400">
-            {room.lastMessage?.time ?? ""}
+            {timeText}
           </Text>
         </Flex>
 

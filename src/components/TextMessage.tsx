@@ -88,7 +88,7 @@ export const TextMessage = ({
         )}
         <Text margin={0}>{message.body}</Text>
         <Text margin={0} fontSize="xs" css={timestampStyles}>
-          {message.time}
+          {new Date(message.time).toLocaleTimeString("en-US")}
         </Text>
       </Flex>
     </Flex>

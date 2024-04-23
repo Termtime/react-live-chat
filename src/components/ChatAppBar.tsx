@@ -33,7 +33,9 @@ const titleWrapperStyles = css`
 `;
 
 export const ChatAppBar = () => {
-  const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
+  const {rooms, currentRoomId, authUser} = useAppSelector(
+    (state) => state.chat
+  );
   const {isExpanded: isChatListExpanded} = useAppSelector(
     (state) => state.ui.chatList
   );
@@ -42,6 +44,10 @@ export const ChatAppBar = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
+  const usersMinusMe = currentRoom?.users.filter(
+    (user) => user.id !== authUser?.id!
+  );
+  const myUsernameInList = (usersMinusMe?.length ?? 0) <= 5 ? ", you" : " ";
 
   const disconnect = async () => {
     await router.push("/");
@@ -64,7 +70,16 @@ export const ChatAppBar = () => {
       )}
       <Flex flexDirection="column" css={titleWrapperStyles}>
         <Text>Room: {currentRoom?.name ?? ""}</Text>
-        <Text fontSize="xs">{typingUsers}</Text>
+        <Text
+          fontSize="xs"
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
+        >
+          {typingUsers ??
+            usersMinusMe?.map((u) => u.username.split(" ")[0]).join(", ") +
+              myUsernameInList}
+        </Text>
       </Flex>
       <Flex
         style={{

@@ -8,7 +8,7 @@ export const useTypingUsers = () => {
     rooms.find((room) => room.id === currentRoomId)?.typingUsers || [];
 
   const renderTypingUsers = useMemo(() => {
-    let string: string | React.ReactElement = "";
+    let string: string | null = null;
     if (typingUsers.length === 1) {
       string = typingUsers.map((user) => user.username) + " is typing...";
     } else if (typingUsers.length > 1) {
@@ -23,7 +23,7 @@ export const useTypingUsers = () => {
     } else if (typingUsers.length > 5) {
       string = "Multiple people are typing...";
     } else {
-      string = <div>&nbsp;</div>;
+      string = null;
     }
     return string;
   }, [typingUsers]);

@@ -52,7 +52,7 @@ export const MessageTextArea = () => {
             username: authUser.username,
             color: authUser.color,
           },
-          time: new Date().toLocaleTimeString("en-US"),
+          time: Date.now(),
         };
         setText("");
         stopTypingDebounced.flush();

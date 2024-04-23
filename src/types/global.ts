@@ -22,7 +22,7 @@ export interface AuthUser {
 
 export interface Message {
   body: string;
-  time: string;
+  time: number;
   user: User;
 }
 
