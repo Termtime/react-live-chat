@@ -1,72 +1,118 @@
 import React, {useEffect, useMemo} from "react";
-import {MessagesBox, MessageTextArea, UserList, ChatHeader} from "@/components";
+import {ChatWindow, MessageTextArea, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
-import {useAppSelector, getAppDispatch} from "../../redux/toolkit/store";
-import {leaveRoom} from "../../redux/toolkit/features/chatSlice";
-import {Flex, Text} from "@chakra-ui/react";
+import {useAppSelector, AppDispatch} from "../../redux/toolkit/store";
+import {joinRoom, login, logout} from "../../redux/toolkit/features/chatSlice";
+import {
+  Button,
+  Flex,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+} from "@chakra-ui/react";
 import {css} from "@emotion/react";
+import {useDispatch} from "react-redux";
+import {useSession} from "next-auth/react";
+import {RoomList} from "../../components/RoomList";
+import {setNewRoomModalOpen} from "../../redux/toolkit/features/uiSlice";
+import {ghostButtonStyles} from "../../styles/styles";
+
+const chatAppStyles = css`
+  display: flex;
+  background-color: #222e35;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+`;
 
 const ChatPage = () => {
   const router = useRouter();
-  const {
-    roomId,
-    user: ownUser,
-    typingUsers,
-    loading,
-  } = useAppSelector((state) => state.chat);
+  const {data, status} = useSession({
+    required: true,
+    onUnauthenticated: () => router.push("/"),
+  });
+
+  const {rooms, authUser, currentRoomId} = useAppSelector(
+    (state) => state.chat
+  );
+
+  const {isOpen: isNewRoomModalOpen} = useAppSelector(
+    (state) => state.ui.newRoomModal
+  );
+
+  const [roomIdInput, setRoomIdInput] = React.useState("");
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    const disconnect = async () => {
-      const dispatch = getAppDispatch();
-      await router.push("/");
-      dispatch(leaveRoom());
-    };
-    if ((!roomId || !ownUser) && !loading) {
-      console.log("roomId or username is not set");
-      alert("roomId or username is not set");
-      disconnect();
+    if (status === "authenticated" && data.user?.name) {
+      dispatch(login(data.user?.name));
     }
-  }, [loading, ownUser, roomId, router]);
+  }, [data?.user?.name, status]);
 
-  const renderTypingUsers = useMemo(() => {
-    let string: string | React.ReactElement = "";
-    if (typingUsers.length === 1) {
-      string = typingUsers.map((user) => user.username) + " is typing...";
-    } else if (typingUsers.length > 1) {
-      let usersMinusLast = [...typingUsers.map((user) => user.username)];
-      usersMinusLast.pop();
-      console.log(usersMinusLast);
-      string =
-        usersMinusLast.join(",") +
-        " and " +
-        typingUsers[usersMinusLast.length].username +
-        " are typing...";
-    } else if (typingUsers.length > 5) {
-      string = "Multiple people are typing...";
-    } else {
-      string = <div>&nbsp;</div>;
-    }
-    return string;
-  }, [typingUsers]);
+  const handleJoinRoom = async () => {
+    await dispatch(joinRoom(roomIdInput));
+    dispatch(setNewRoomModalOpen(false));
+    setRoomIdInput("");
+  };
 
-  const chatAppStyles = css`
-    display: flex;
-    background-color: #1c2224;
-    flex-direction: column;
-    padding: 1rem;
-    height: 100vh;
-  `;
+  if (!authUser) {
+    return (
+      <Flex css={chatAppStyles}>
+        <Text color="white">Loading...</Text>
+      </Flex>
+    );
+  }
 
   return (
     <Flex css={chatAppStyles}>
-      <ChatHeader />
-      <Flex flex={1} overflowY="auto">
-        <UserList />
-        <MessagesBox />
-      </Flex>
-      <Flex direction="column">
-        <Text color="white">{renderTypingUsers}</Text>
-        <MessageTextArea />
+      <Modal
+        onClose={() => dispatch(setNewRoomModalOpen(false))}
+        isOpen={isNewRoomModalOpen && !!authUser}
+        closeOnEsc={false}
+        closeOnOverlayClick={false}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent backgroundColor="#222e35" color="white">
+          <ModalHeader>Select a room to join</ModalHeader>
+          <ModalBody>
+            <Input
+              value={roomIdInput}
+              onChange={(e) => setRoomIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleJoinRoom()}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            {rooms.length > 0 && (
+              <Button
+                colorScheme="grey"
+                variant="ghost"
+                onClick={() => dispatch(setNewRoomModalOpen(false))}
+              >
+                Cancel
+              </Button>
+            )}
+            <Button colorScheme="blue" onClick={handleJoinRoom}>
+              Join room
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Flex flex={1}>
+        <RoomList />
+        <Flex flex={1} overflowY="auto" flexDirection="column" zIndex={2}>
+          <ChatAppBar />
+          <Flex flex={1} overflowY="auto">
+            <ChatWindow />
+            <UserList />
+          </Flex>
+        </Flex>
       </Flex>
     </Flex>
   );

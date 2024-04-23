@@ -5,7 +5,7 @@ export interface User {
   color?: string;
 }
 
-export interface PublicAuthUser {
+export interface PusherUserPayload {
   username: string;
   publicKey: string;
   color?: string;
@@ -22,7 +22,7 @@ export interface AuthUser {
 
 export interface Message {
   body: string;
-  time: string;
+  time: number;
   user: User;
 }
 
@@ -48,10 +48,5 @@ export interface UserEncryptedMessage {
    * Initialization Vector
    * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt
    */
-  iv: Uint8Array;
-}
-
-export interface RoomHandshake {
-  user: PublicAuthUser;
-  roomId: string;
+  iv: string;
 }

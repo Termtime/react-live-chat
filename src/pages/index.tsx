@@ -1,167 +1,150 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect} from "react";
 import {useRouter} from "next/router";
-import {joinRoom} from "../redux/toolkit/features/chatSlice";
-import {useAppDispatch} from "../redux/toolkit/store";
-import {SocketConnection} from "../io/connection";
 import {
   Box,
   Button,
   Card,
   CardBody,
   Flex,
-  FormControl,
   Heading,
-  Input,
-  InputGroup,
-  InputLeftAddon,
   SimpleGrid,
   Text,
 } from "@chakra-ui/react";
 import {css} from "@emotion/react";
-import {apiRoute} from "../utils/constants";
+import {signIn, signOut, useSession} from "next-auth/react";
+
+const homePageHeaderStyles = css`
+  box-shadow: inset 0 0 100vw 5px rgba(0, 0, 0, 1);
+  padding: 10dvh;
+  min-height: 45dvh;
+  margin: 0;
+  background-image: url("/resources/img/nature-background.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const textStyles = css`
+  color: white;
+  text-align: center;
+`;
+
+const homePageBottomStyles = css`
+  background: #c94b4b;
+  background: -webkit-linear-gradient(to top, #4b134f, #c94b4b);
+  background: linear-gradient(to top, #4b134f, #c94b4b);
+  color: white;
+  padding: 2vw;
+  min-height: 55dvh;
+`;
 
 const HomePage = () => {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [roomId, setRoomId] = useState("");
-  const dispatch = useAppDispatch();
+  const {data, status} = useSession();
 
-  const onClick: React.MouseEventHandler = (e) => {
-    dispatch(joinRoom({roomId, username}));
-    router.push("/chat");
-  };
+  console.log({data});
+  const onClick: React.MouseEventHandler = useCallback(
+    (e) => {
+      if (status === "authenticated" && data?.user?.name) {
+        router.push("/chat");
+      }
 
-  const homePageHeaderStyles = css`
-    box-shadow: inset 0 0 100vw 5px rgba(0, 0, 0, 1);
-    padding: 10vh;
-    min-height: 45vh;
-    margin: 0;
-    background-image: url("/resources/img/nature-background.jpg");
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    flex-direction: column;
-  `;
-
-  const textStyles = css`
-    color: white;
-    text-align: center;
-  `;
-
-  const homePageBottomStyles = css`
-    background: #c94b4b;
-    background: -webkit-linear-gradient(to top, #4b134f, #c94b4b);
-    background: linear-gradient(to top, #4b134f, #c94b4b);
-    color: white;
-    padding: 2vw;
-    min-height: 55vh;
-  `;
+      if (status === "unauthenticated") {
+        signIn(
+          "auth0",
+          {callbackUrl: `${window.location.origin}/chat`},
+          {
+            connection: "google-oauth2",
+          }
+        ).catch((error) => {
+          console.error("Error signing in", error);
+        });
+      }
+    },
+    [status, data?.user?.name, router]
+  );
 
   useEffect(() => {
-    const init = async () => {
-      await fetch("api/socketio");
-      SocketConnection.getInstance();
-    };
-
-    init();
-  }, []);
+    if (status === "authenticated" && data?.user?.name) {
+      router.push("/chat");
+    }
+  }, [status, data?.user?.name, router]);
 
   return (
     <Flex direction="column">
-      <Flex css={homePageHeaderStyles}>
+      <Flex css={homePageHeaderStyles} gap={3}>
         <Heading as="h1" size="xl" textAlign="center" css={textStyles}>
-          Welcome to Live-chat!
+          Welcome to Live-chat{data?.user?.name && `,${data?.user?.name}`}!
         </Heading>
-        <Heading as="h3" size="lg" textAlign="center" css={textStyles}>
-          Join chat rooms, and talk to your friends!
+        <Heading as="h3" size="md" textAlign="center" css={textStyles}>
+          Join the conversation! Chat rooms are buzzing with new people to meet.
         </Heading>
-        <Flex
-          marginTop={10}
-          direction="column"
-          alignItems="center"
-          alignSelf="center"
+        <Button
+          mt={5}
+          sx={{alignSelf: "center"}}
+          colorScheme="blue"
+          onClick={onClick}
+          type="button"
+          disabled={status === "loading"}
         >
-          <FormControl isRequired>
-            <InputGroup>
-              <InputLeftAddon>Username:</InputLeftAddon>
-              <Input
-                type="text"
-                backgroundColor="white"
-                value={username}
-                onInput={(e) =>
-                  setUsername((e.target as HTMLInputElement).value)
-                }
-                placeholder="Termtime"
-                required
-              />
-            </InputGroup>
-          </FormControl>
-          <br />
-          <FormControl isRequired>
-            <InputGroup>
-              <InputLeftAddon>Room name:</InputLeftAddon>
-              <Input
-                type="text"
-                backgroundColor="white"
-                placeholder="Termtime's room"
-                value={roomId}
-                onInput={(e) => setRoomId((e.target as HTMLInputElement).value)}
-                required
-              />
-            </InputGroup>
-          </FormControl>
-          <br />
+          <Text>
+            {status === "authenticated"
+              ? "Start chatting now"
+              : "Log in to get started!"}
+          </Text>
+        </Button>
+        {status === "authenticated" && (
           <Button
-            width="100%"
-            type="submit"
-            colorScheme="blue"
-            onClick={onClick}
+            mt={5}
+            width="50%"
+            sx={{alignSelf: "center"}}
+            colorScheme="red"
+            onClick={() => signOut()}
+            type="button"
           >
-            Join
+            Log out
           </Button>
-        </Flex>
+        )}
       </Flex>
       <SimpleGrid css={homePageBottomStyles} spacing={5} minChildWidth="300px">
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
-                Totally Anonimous
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
+                Live connections, real conversations
               </Heading>
               <hr />
               <Text>
-                Chat over a secure, anonimous space about common topics or
-                interests. Meet new people and share about life!
+                Chat over a secure, space about common topics or interests.
+                Start chatting immediately!
               </Text>
             </CardBody>
           </Card>
         </Box>
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
                 End-to-end encryption
               </Heading>
               <hr />
               <Text>
-                Using NextJS and Socket.io together with end-to-end encryption
-                for messages we can connect people through a simple web
-                application.
+                With Next.js, Pusher, and end-to-end encryption we have created
+                a simple web app that brings people together.
               </Text>
             </CardBody>
           </Card>
         </Box>
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
-                Why?
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
+                Chat from Anywhere
               </Heading>
               <hr />
-              <Text>
-                Because there is always a need to explore new and fun ways to
-                use and apply technology in our life.
-              </Text>
+              <Text>Connect on the go: Web & mobile friendly.</Text>
             </CardBody>
           </Card>
         </Box>

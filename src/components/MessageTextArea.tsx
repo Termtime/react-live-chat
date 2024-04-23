@@ -15,73 +15,113 @@ import {Message} from "../types";
 import {EmojiButton, EmojiButtonProps} from "./EmojiButton";
 import SendIcon from "@mui/icons-material/Send";
 import debounce from "lodash.debounce";
+import {ghostButtonStyles} from "../styles/styles";
+import ResizeTextarea from "react-textarea-autosize";
+import {
+  setChatListOpen,
+  setUserListOpen,
+} from "../redux/toolkit/features/uiSlice";
+
+const textAreaStyles = css`
+  flex-grow: 1;
+  background-color: #2a3942;
+  color: white;
+  resize: none;
+  max-height: 120px;
+  border: 0;
+
+  :focus {
+    box-shadow: none;
+  }
+`;
+
+const messageTextAreaStyles = css`
+  flex: 1;
+  gap: 5px;
+`;
 
 export const MessageTextArea = () => {
   const [text, setText] = useState("");
 
-  const {roomId, user: ownUser} = useAppSelector(
+  const {currentRoomId, rooms, authUser} = useAppSelector(
     (state: RootState) => state.chat
   );
+  const currentRoom = rooms.find((room) => room.id === currentRoomId);
   const dispatch = useAppDispatch();
 
   const stopTypingDebounced = useMemo(
-    () => debounce(() => dispatch(stopTyping(roomId!)), 3000),
-    [dispatch, roomId]
+    () => debounce(() => dispatch(stopTyping()), 3000),
+    [dispatch, currentRoomId]
   );
   const startTypingDebounced = useMemo(
     () =>
-      debounce(() => dispatch(startTyping(roomId!)), 3000, {
+      debounce(() => dispatch(startTyping()), 3000, {
         leading: true,
         trailing: false,
       }),
-    [dispatch, roomId]
+    [dispatch, currentRoomId]
   );
 
-  const onSendMessage = useCallback(
-    (e?: React.FormEvent) => {
+  const handleSendMessage = useCallback(
+    async (e?: React.MouseEvent) => {
       if (e) e.preventDefault();
       if (text.trim().length === 0) return;
-      if (ownUser && roomId) {
+      console.log(
+        "Sending message",
+        text,
+        authUser,
+        currentRoomId,
+        currentRoom
+      );
+      if (authUser && currentRoomId && currentRoom) {
+        console.log("yeah");
         const message: Message = {
           body: text,
           user: {
-            id: ownUser.id!,
-            username: ownUser?.username,
-            color: ownUser?.color,
+            id: authUser.id!,
+            username: authUser.username,
+            color: authUser.color,
           },
-          time: new Date().toLocaleTimeString("en-US"),
+          time: Date.now(),
         };
         setText("");
         stopTypingDebounced.flush();
-        dispatch(sendMessage({message, roomId}));
+        await dispatch(sendMessage(message));
+
+        // TODO: Scroll to bottom of message after sending
       } else {
         throw new Error(
           "Cannot send message. Check your connection and make sure you are authenticated."
         );
       }
     },
-    [text, ownUser, roomId, stopTypingDebounced, dispatch]
+    [text, authUser, currentRoom, stopTypingDebounced, dispatch]
   );
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
-      if (roomId) {
+      const currentRoom = rooms.find((room) => room.id === currentRoomId);
+      if (currentRoom) {
         startTypingDebounced();
         stopTypingDebounced();
       }
       setText(e.target.value);
     },
-    [roomId, startTypingDebounced, stopTypingDebounced]
+    [rooms, startTypingDebounced, stopTypingDebounced]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.keyCode === 13 && !e.shiftKey) {
-        onSendMessage();
-        if (e) e.preventDefault();
+      // On desktop, send message on Enter key press
+      // On mobile, do nothing
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (e.key === "Enter" && !e.shiftKey && !isMobile) {
+        e.preventDefault();
+        handleSendMessage();
       }
     },
-    [onSendMessage]
+    [handleSendMessage]
   );
 
   const onEmojiSelected = useCallback<NonNullable<EmojiButtonProps["onClick"]>>(
@@ -93,35 +133,32 @@ export const MessageTextArea = () => {
     [text, handleChange]
   );
 
-  const textAreaStyles = css`
-    flex-grow: 1;
-    box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.75);
-    background-color: rgba(0, 0, 0, 0.65);
-    color: white;
-    resize: none;
-    max-height: 120px;
-    border: 0;
-  `;
-
-  const formContainerStyles = css`
-    flex: 1;
-  `;
   return (
-    <form onSubmit={onSendMessage}>
-      <Flex css={formContainerStyles}>
-        <EmojiButton onClick={onEmojiSelected} />
-        <Textarea
-          css={textAreaStyles}
-          rows={1}
-          value={text}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Write something..."
-        />
-        <Button type="submit" colorScheme="blue">
-          <SendIcon />
-        </Button>
-      </Flex>
-    </form>
+    <Flex css={messageTextAreaStyles}>
+      <EmojiButton onClick={onEmojiSelected} />
+      <Textarea
+        outline={"none"}
+        css={textAreaStyles}
+        value={text}
+        minH="unset"
+        overflow="hidden"
+        w="100%"
+        resize="none"
+        minRows={1}
+        as={ResizeTextarea}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder="Write something"
+        onFocus={() => {
+          if (window.innerWidth < 768) {
+            dispatch(setChatListOpen(false));
+            dispatch(setUserListOpen(false));
+          }
+        }}
+      />
+      <Button type="submit" onClick={handleSendMessage} css={ghostButtonStyles}>
+        <SendIcon />
+      </Button>
+    </Flex>
   );
 };
