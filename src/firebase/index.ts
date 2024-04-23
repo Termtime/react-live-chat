@@ -23,3 +23,5 @@
 
 // Initialize Firebase
 // const app = initializeApp(firebaseConfig);
+
+export const placeholder = "placeholder";
