@@ -35,7 +35,7 @@ const textAreaStyles = css`
   }
 `;
 
-const formContainerStyles = css`
+const messageTextAreaStyles = css`
   flex: 1;
   gap: 5px;
 `;
@@ -63,7 +63,7 @@ export const MessageTextArea = () => {
   );
 
   const handleSendMessage = useCallback(
-    (e?: React.FormEvent) => {
+    async (e?: React.MouseEvent) => {
       if (e) e.preventDefault();
       if (text.trim().length === 0) return;
       if (authUser && currentRoomId && currentRoom) {
@@ -78,7 +78,9 @@ export const MessageTextArea = () => {
         };
         setText("");
         stopTypingDebounced.flush();
-        dispatch(sendMessage(message));
+        await dispatch(sendMessage(message));
+
+        // TODO: Scroll to bottom of message after sending
       } else {
         throw new Error(
           "Cannot send message. Check your connection and make sure you are authenticated."
@@ -102,9 +104,13 @@ export const MessageTextArea = () => {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.keyCode === 13 && !e.shiftKey) {
+      // On desktop, send message on Enter key press
+      // On mobile, do nothing
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (e.key === "Enter" && !e.shiftKey && !isMobile) {
+        e.preventDefault();
         handleSendMessage();
-        if (e) e.preventDefault();
       }
     },
     [handleSendMessage]
@@ -120,35 +126,33 @@ export const MessageTextArea = () => {
   );
 
   return (
-    <form onSubmit={handleSendMessage}>
-      <Flex css={formContainerStyles}>
-        <EmojiButton onClick={onEmojiSelected} />
-        <Textarea
-          outline={"none"}
-          css={textAreaStyles}
-          value={text}
-          minH="unset"
-          overflow="hidden"
-          w="100%"
-          resize="none"
-          minRows={1}
-          as={ResizeTextarea}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Write something"
-          onFocus={() => {
-            console.log("focus", window.innerWidth);
-            if (window.innerWidth < 768) {
-              console.log("closing in!");
-              dispatch(setChatListOpen(false));
-              dispatch(setUserListOpen(false));
-            }
-          }}
-        />
-        <Button type="submit" css={ghostButtonStyles}>
-          <SendIcon />
-        </Button>
-      </Flex>
-    </form>
+    <Flex css={messageTextAreaStyles}>
+      <EmojiButton onClick={onEmojiSelected} />
+      <Textarea
+        outline={"none"}
+        css={textAreaStyles}
+        value={text}
+        minH="unset"
+        overflow="hidden"
+        w="100%"
+        resize="none"
+        minRows={1}
+        as={ResizeTextarea}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder="Write something"
+        onFocus={() => {
+          console.log("focus", window.innerWidth);
+          if (window.innerWidth < 768) {
+            console.log("closing in!");
+            dispatch(setChatListOpen(false));
+            dispatch(setUserListOpen(false));
+          }
+        }}
+      />
+      <Button type="submit" onClick={handleSendMessage} css={ghostButtonStyles}>
+        <SendIcon />
+      </Button>
+    </Flex>
   );
 };

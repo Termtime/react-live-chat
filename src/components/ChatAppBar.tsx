@@ -18,7 +18,10 @@ const headerStyles = css`
   border-top-right-radius: 0.5rem;
   background-color: #222e35;
   padding: 1rem;
-  height: 4rem;
+  height: 5dvh;
+  @media (max-width: 768px) {
+    height: 10dvh;
+  }
   color: white;
   box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
   align-items: center;
@@ -85,8 +88,9 @@ export const ChatAppBar = () => {
           textOverflow="ellipsis"
         >
           {typingUsers ??
-            usersMinusMe.map((u) => u.username.split(" ")[0]).join(", ") +
-              myUsernameInList}
+            (currentRoomId &&
+              usersMinusMe?.map((u) => u.username.split(" ")[0]).join(", ") +
+                myUsernameInList)}
         </Text>
       </Flex>
       <Flex

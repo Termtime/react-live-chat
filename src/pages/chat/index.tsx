@@ -25,8 +25,8 @@ const chatAppStyles = css`
   display: flex;
   background-color: #222e35;
   flex-direction: column;
-  height: 100vh;
-  max-height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
 `;
 
 const ChatPage = () => {

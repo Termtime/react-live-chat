@@ -13,7 +13,6 @@ const userListStyles = css`
   padding: 1rem;
   display: flex;
   overflow-y: auto;
-  width: 15rem;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
 `;
@@ -47,14 +46,31 @@ export const UserList = () => {
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
   if (!currentRoom) return null;
 
+  const userListResponsiveStyles = css`
+    ${userListStyles}
+    margin-left: ${isUserListExpanded ? 0 : "-25dvw"};
+    width: 25dvw;
+    max-width: 25dvw;
+    @media (max-width: 768px) {
+      margin-left: ${isUserListExpanded ? 0 : "-50dvw"};
+      width: 50dvw;
+      max-width: 50dvw;
+    }
+  `;
+
   return (
     <Flex
-      css={userListStyles}
-      marginLeft={isUserListExpanded ? 0 : "-15rem"}
+      css={userListResponsiveStyles}
       transition="margin-left 0.3s ease"
       visibility={shouldHide ? "hidden" : "visible"}
     >
-      <Text>
+      <Text
+        borderBottom="1px solid #374045"
+        padding={2}
+        width="100%"
+        textAlign="center"
+        mb={3}
+      >
         {`Users online: `}
         {currentRoom.users.length}
       </Text>

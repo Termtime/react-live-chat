@@ -15,7 +15,10 @@ const chatWindowStyles = css`
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
-  height: 95vh;
+  height: 95dvh;
+  @media (max-width: 768px) {
+    height: 90dvh;
+  }
 `;
 
 const messageTextAreaStyles = css`

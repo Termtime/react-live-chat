@@ -15,8 +15,8 @@ import {signIn, signOut, useSession} from "next-auth/react";
 
 const homePageHeaderStyles = css`
   box-shadow: inset 0 0 100vw 5px rgba(0, 0, 0, 1);
-  padding: 10vh;
-  min-height: 45vh;
+  padding: 10dvh;
+  min-height: 45dvh;
   margin: 0;
   background-image: url("/resources/img/nature-background.jpg");
   background-position: center;
@@ -37,7 +37,7 @@ const homePageBottomStyles = css`
   background: linear-gradient(to top, #4b134f, #c94b4b);
   color: white;
   padding: 2vw;
-  min-height: 55vh;
+  min-height: 55dvh;
 `;
 
 const HomePage = () => {
@@ -83,16 +83,17 @@ const HomePage = () => {
         </Heading>
         <Button
           mt={5}
-          width="50%"
           sx={{alignSelf: "center"}}
           colorScheme="blue"
           onClick={onClick}
           type="button"
           disabled={status === "loading"}
         >
-          {status === "authenticated"
-            ? "Start chatting now"
-            : "Log in to get started!"}
+          <Text>
+            {status === "authenticated"
+              ? "Start chatting now"
+              : "Log in to get started!"}
+          </Text>
         </Button>
         {status === "authenticated" && (
           <Button
