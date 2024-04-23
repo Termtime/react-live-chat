@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect} from "react";
 import {useRouter} from "next/router";
-import {useAppDispatch} from "../redux/toolkit/store";
 import {
   Box,
   Button,
@@ -24,6 +23,7 @@ const homePageHeaderStyles = css`
   background-size: cover;
   background-repeat: no-repeat;
   flex-direction: column;
+  justify-content: center;
 `;
 
 const textStyles = css`
@@ -45,8 +45,6 @@ const HomePage = () => {
   const {data, status} = useSession();
 
   console.log({data});
-  //TODO: implement the login functionality and move joinroom to the chat page
-  //TODO: implement private routes that must have a user logged in to access
   const onClick: React.MouseEventHandler = useCallback(
     (e) => {
       if (status === "authenticated" && data?.user?.name) {
@@ -76,12 +74,12 @@ const HomePage = () => {
 
   return (
     <Flex direction="column">
-      <Flex css={homePageHeaderStyles}>
+      <Flex css={homePageHeaderStyles} gap={3}>
         <Heading as="h1" size="xl" textAlign="center" css={textStyles}>
-          Welcome to Live-chat {`,${data?.user?.name}`}!
+          Welcome to Live-chat{data?.user?.name && `,${data?.user?.name}`}!
         </Heading>
-        <Heading as="h3" size="lg" textAlign="center" css={textStyles}>
-          Join chat rooms, and talk to your friends!
+        <Heading as="h3" size="md" textAlign="center" css={textStyles}>
+          Join the conversation! Chat rooms are buzzing with new people to meet.
         </Heading>
         <Button
           mt={5}
@@ -92,7 +90,9 @@ const HomePage = () => {
           type="button"
           disabled={status === "loading"}
         >
-          {status === "authenticated" ? "Start chatting" : "Login"}
+          {status === "authenticated"
+            ? "Start chatting now"
+            : "Log in to get started!"}
         </Button>
         {status === "authenticated" && (
           <Button
@@ -110,44 +110,40 @@ const HomePage = () => {
       <SimpleGrid css={homePageBottomStyles} spacing={5} minChildWidth="300px">
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
-                Totally Anonimous
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
+                Live connections, real conversations
               </Heading>
               <hr />
               <Text>
-                Chat over a secure, anonimous space about common topics or
-                interests. Meet new people and share about life!
+                Chat over a secure, space about common topics or interests.
+                Start chatting immediately!
               </Text>
             </CardBody>
           </Card>
         </Box>
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
                 End-to-end encryption
               </Heading>
               <hr />
               <Text>
-                Using NextJS and Socket.io together with end-to-end encryption
-                for messages we can connect people through a simple web
-                application.
+                With Next.js, Pusher, and end-to-end encryption we have created
+                a simple web app that brings people together.
               </Text>
             </CardBody>
           </Card>
         </Box>
         <Box>
           <Card>
-            <CardBody>
-              <Heading as="h3" size="lg" marginBottom={3}>
-                Why?
+            <CardBody gap={4} display="flex" flexDirection="column">
+              <Heading as="h3" size="lg">
+                Chat from Anywhere
               </Heading>
               <hr />
-              <Text>
-                Because there is always a need to explore new and fun ways to
-                use and apply technology in our life.
-              </Text>
+              <Text>Connect on the go: Web & mobile friendly.</Text>
             </CardBody>
           </Card>
         </Box>
