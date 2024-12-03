@@ -12,7 +12,7 @@ export interface EmojiButtonProps {
 export const EmojiButton = ({onClick}: EmojiButtonProps) => {
   const [isActive, setIsActive] = useState(false);
   const emojiPickerStyles = css`
-    position: relative;
+    position: absolute;
     bottom: 5rem;
     left: 1.5rem;
   `;
