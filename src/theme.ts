@@ -2,8 +2,13 @@ import {extendTheme} from "@chakra-ui/react";
 
 const theme = extendTheme({
   fonts: {
-    heading: `'Inter', sans-serif`,
-    body: `'Inter', sans-serif`,
+    heading: `'Jost', 'Inter', sans-serif`,
+    body: `'Roboto', 'Inter', sans-serif`,
+  },
+  fontWeights: {
+    normal: 400,
+    medium: 500,
+    bold: 600,
   },
 });
 

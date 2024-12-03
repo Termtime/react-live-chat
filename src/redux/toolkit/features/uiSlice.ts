@@ -17,10 +17,10 @@ const initialState: UIState = {
     isExpanded: false,
   },
   chatList: {
-    isExpanded: true,
+    isExpanded: false,
   },
   newRoomModal: {
-    isOpen: true,
+    isOpen: false,
   },
 };
 

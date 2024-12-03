@@ -15,12 +15,14 @@ const userListStyles = css`
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #374045 #111b21;
+  gap: 0.5rem;
 `;
 
 const userStyles = css`
   display: flex;
   margin-bottom: 0.5rem;
   word-break: break-all;
+  gap: 0.5rem;
 `;
 
 export const UserList = () => {

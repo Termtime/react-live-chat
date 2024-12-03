@@ -10,6 +10,7 @@ import {
 } from "../redux/toolkit/features/uiSlice";
 import {useEffect, useState} from "react";
 import {css} from "@emotion/react";
+import {EmojiButton} from "./EmojiButton";
 
 const roomListStyles = css`
   overflow-y: auto;
@@ -19,8 +20,8 @@ const roomListStyles = css`
   }
   flex-direction: column;
   scrollbar-width: thin;
-  scrollbar-color: #374045 #111b21;
-  background-color: #111b21;
+  scrollbar-color: #374045 #222e35;
+  background-color: #222e35;
 `;
 export const RoomList = () => {
   const {rooms, currentRoomId} = useAppSelector((state) => state.chat);
@@ -42,9 +43,9 @@ export const RoomList = () => {
   const dispatch = useAppDispatch();
 
   const roomListResponsiveStyles = css`
-    margin-right: ${isChatListExpanded ? 0 : "-25dvw"};
-    width: 25dvw;
-    max-width: 25dvw;
+    margin-right: ${isChatListExpanded ? 0 : "-27dvw"};
+    width: 27dvw;
+    max-width: 27dvw;
     @media (max-width: 768px) {
       margin-right: ${isChatListExpanded ? 0 : "-50dvw"};
       width: 50dvw;
@@ -53,6 +54,7 @@ export const RoomList = () => {
   `;
   const responsiveHeaderStyles = css`
     height: 5dvh;
+    gap: 0.5rem;
     @media (max-width: 768px) {
       height: 10dvh;
     }
@@ -75,32 +77,26 @@ export const RoomList = () => {
         padding={4}
       >
         <Flex alignItems="center">
-          <Avatar name={authUser?.username} size="sm" bg="gray.300" />
-          <Text
-            display={{base: "none", md: "block"}}
-            ml={2}
-            color="white"
-            textOverflow="ellipsis"
-            overflow="hidden"
-            whiteSpace="nowrap"
-          >
-            {authUser?.username}
-          </Text>
-        </Flex>
-        <Flex>
-          <Tooltip label="Add new room">
-            <Button
-              variant="solid"
-              css={ghostButtonStyles}
-              onClick={() => dispatch(setNewRoomModalOpen(true))}
-            >
-              <AddComment
-                sx={{
-                  transform: "scale(-1,1)",
-                }}
-              />
-            </Button>
+          <Tooltip label={authUser?.username}>
+            <Avatar name={authUser?.username} size="sm" bg="gray.500" />
           </Tooltip>
+        </Flex>
+        <Flex gap="0.5rem">
+          {authUser && rooms.length > 0 && (
+            <Tooltip label="Add new room">
+              <Button
+                variant="solid"
+                css={ghostButtonStyles}
+                onClick={() => dispatch(setNewRoomModalOpen(true))}
+              >
+                <AddComment
+                  sx={{
+                    transform: "scale(-1,1)",
+                  }}
+                />
+              </Button>
+            </Tooltip>
+          )}
           <Button
             variant="solid"
             css={ghostButtonStyles}

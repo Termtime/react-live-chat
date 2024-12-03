@@ -1,14 +1,15 @@
 import React, {useEffect, useMemo} from "react";
-import {ChatWindow, MessageTextArea, UserList, ChatAppBar} from "@/components";
+import {ChatWindow, UserList, ChatAppBar} from "@/components";
 import {useRouter} from "next/router";
 import {useAppSelector, AppDispatch} from "../../redux/toolkit/store";
-import {joinRoom, login, logout} from "../../redux/toolkit/features/chatSlice";
+import {joinRoom, login} from "../../redux/toolkit/features/chatSlice";
 import {
   Button,
   Flex,
   Input,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -21,6 +22,7 @@ import {useSession} from "next-auth/react";
 import {RoomList} from "../../components/RoomList";
 import {setNewRoomModalOpen} from "../../redux/toolkit/features/uiSlice";
 import {ghostButtonStyles} from "../../styles/styles";
+import {AddComment} from "@mui/icons-material";
 
 const chatAppStyles = css`
   display: flex;
@@ -73,13 +75,14 @@ const ChatPage = () => {
       <Modal
         onClose={() => dispatch(setNewRoomModalOpen(false))}
         isOpen={isNewRoomModalOpen && !!authUser}
-        closeOnEsc={false}
-        closeOnOverlayClick={false}
         isCentered
       >
         <ModalOverlay />
         <ModalContent backgroundColor="#222e35" color="white">
-          <ModalHeader>Select a room to join</ModalHeader>
+          <ModalHeader>
+            <Text>Name of the room</Text>
+            <ModalCloseButton />
+          </ModalHeader>
           <ModalBody>
             <Input
               value={roomIdInput}
@@ -108,10 +111,36 @@ const ChatPage = () => {
         <RoomList />
         <Flex flex={1} overflowY="auto" flexDirection="column" zIndex={2}>
           <ChatAppBar />
-          <Flex flex={1} overflowY="auto">
-            <ChatWindow />
-            <UserList />
-          </Flex>
+          {rooms.length === 0 && (
+            <Flex
+              flexDir="column"
+              justifyContent="center"
+              alignItems="center"
+              padding="1rem"
+              gap={1}
+              flex={1}
+            >
+              <Text color="gray.200" padding={4}>
+                You are not part of any rooms yet. Get started!
+              </Text>
+              <Button
+                css={css`
+                  ${ghostButtonStyles}
+                  border-radius: 5px;
+                  gap: 0.5rem;
+                `}
+                onClick={() => dispatch(setNewRoomModalOpen(true))}
+              >
+                <AddComment /> Join/Create room
+              </Button>
+            </Flex>
+          )}
+          {currentRoomId && (
+            <Flex flex={1} overflowY="auto">
+              <ChatWindow />
+              <UserList />
+            </Flex>
+          )}
         </Flex>
       </Flex>
     </Flex>

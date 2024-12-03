@@ -29,6 +29,7 @@ const textAreaStyles = css`
   resize: none;
   max-height: 120px;
   border: 0;
+  height: auto !important;
 
   :focus {
     box-shadow: none;

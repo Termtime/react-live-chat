@@ -1,8 +1,10 @@
-import {Flex} from "@chakra-ui/react";
+import {Button, Flex, Text} from "@chakra-ui/react";
 import {css} from "@emotion/react";
 import {useAppSelector} from "../redux/toolkit/store";
 import {TextMessage} from "./TextMessage";
 import {MessageTextArea} from "./MessageTextArea";
+import {ghostButtonStyles} from "../styles/styles";
+import {AddComment} from "@mui/icons-material";
 
 const chatWindowStyles = css`
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
@@ -22,8 +24,8 @@ const chatWindowStyles = css`
 `;
 
 const messageTextAreaStyles = css`
-  background-color: #202c33;
-  padding: 0.5rem;
+  background-color: #222e35;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -42,7 +44,6 @@ const messageListStyles = css`
 export const ChatWindow = () => {
   const {currentRoomId, rooms} = useAppSelector((state) => state.chat);
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
-
   return (
     <Flex css={chatWindowStyles} zIndex={2}>
       <Flex direction="column" css={messageListStyles}>

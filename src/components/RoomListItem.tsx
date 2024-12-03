@@ -26,14 +26,14 @@ export const RoomListItem = ({
   return (
     <Flex
       gap={3}
-      bg={isActive ? "#2a3942" : "#111b21"}
+      bg={isActive ? "#2a3942" : "#222e35"}
       cursor="pointer"
       color="white"
       onClick={onClick}
-      _hover={{bg: isActive ? "#2a3942" : "#202c33"}}
+      _hover={{bg: isActive ? "#2a3942" : "#111b21"}}
       alignItems="center"
     >
-      <Avatar ml={4} name={room.name} size="md" bg="gray.300" />
+      <Avatar ml={4} name={room.name} size="md" bg="gray.500" />
       <Flex
         flexDirection="column"
         overflow="hidden"
@@ -45,15 +45,10 @@ export const RoomListItem = ({
         borderBottom={isActive ? undefined : "1px solid #222d34"}
       >
         <Flex justifyContent="space-between" flex={1} gap={1} flexWrap="wrap">
-          <Text
-            fontWeight="bold"
-            whiteSpace="nowrap"
-            textOverflow="ellipsis"
-            overflow="hidden"
-          >
+          <Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
             {room.name}
           </Text>
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="sm" color="gray.300">
             {timeText}
           </Text>
         </Flex>

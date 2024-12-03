@@ -38,7 +38,7 @@ const ownMessageStyles = css`
 const otherMessageStyles = css`
   ${messageStyles}
   align-self: flex-start;
-  background-color: #202c33;
+  background-color: #222e35;
 `;
 
 const timestampStyles = css`
