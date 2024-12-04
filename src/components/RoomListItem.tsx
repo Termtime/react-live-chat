@@ -26,11 +26,11 @@ export const RoomListItem = ({
   return (
     <Flex
       gap={3}
-      bg={isActive ? "#2a3942" : "#222e35"}
+      bg={isActive ? "#2a3942" : "#111b21"}
       cursor="pointer"
       color="white"
       onClick={onClick}
-      _hover={{bg: isActive ? "#2a3942" : "#111b21"}}
+      _hover={{bg: isActive ? "#2a3942" : "#222e35"}}
       alignItems="center"
     >
       <Avatar ml={4} name={room.name} size="md" bg="gray.500" />
