@@ -115,7 +115,7 @@ export const ChatAppBar = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {!isChatListExpanded && (
+      {!isChatListExpanded && rooms.length > 0 && (
         <Button
           variant="solid"
           css={ghostButtonStyles}

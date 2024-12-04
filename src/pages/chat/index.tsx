@@ -108,7 +108,7 @@ const ChatPage = () => {
         </ModalContent>
       </Modal>
       <Flex flex={1}>
-        <RoomList />
+        {rooms.length > 0 && <RoomList />}
         <Flex flex={1} overflowY="auto" flexDirection="column" zIndex={2}>
           <ChatAppBar />
           {rooms.length === 0 && (
